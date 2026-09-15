@@ -1,0 +1,5 @@
+interface:
+  display_name: "Class Interaction"
+  short_description: "Run a one-student classroom interaction session"
+policy:
+  allow_implicit_invocation: false

@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>第二课：和字的左轻右稳</title>
+    <link rel="stylesheet" href="../assets/course.css" />
+  </head>
+  <body>
+    <main class="page">
+      <article class="lesson">
+        <div class="eyebrow">Lesson 0002 · Xingkai</div>
+        <h1>只练一个字：“和”的左轻右稳</h1>
+        <p class="lead">
+          你上一课写的“和”最好。今天不加新字，只把“和”写得更像行楷：左边不要死停，右边不要散。
+        </p>
+
+        <section>
+          <h2>先说人话</h2>
+          <p>
+            “带一点速度”不是让你写快。它的意思是：
+            <strong>上一笔写完，手不要完全刹车，顺手接下一笔。</strong>
+          </p>
+          <p>
+            写“和”的时候，左边“禾”可以顺一点，右边“口”要慢一点。简单记：
+            <strong>左边别僵，右边别飘。</strong>
+          </p>
+        </section>
+
+        <section class="panel">
+          <h2>今天只看两个地方</h2>
+          <div class="grid">
+            <div class="sample-card">
+              <span class="sample-char">禾</span>
+              <span class="caption">左边：小一点，轻一点，少停顿</span>
+            </div>
+            <div class="sample-card">
+              <span class="sample-char">口</span>
+              <span class="caption">右边：方一点，稳一点，别变形</span>
+            </div>
+            <div class="sample-card">
+              <span class="sample-char">和</span>
+              <span class="caption">合起来：左边让路，右边站住</span>
+            </div>
+          </div>
+        </section>
+
+        <section>
+          <h2>具体怎么写</h2>
+          <ol class="practice-list">
+            <li>先写左边“禾”：第一撇不要太长，别压到右边的位置。</li>
+            <li>写横的时候，轻轻带过去，不要把横写得很重。</li>
+            <li>竖写完以后，下面那一撇可以顺手出去一点，但不能甩太远。</li>
+            <li>再写右边“口”：慢一点，写方，别让它变成歪圈。</li>
+            <li>最后看整体：左边应该像让出空间，右边应该像压住重心。</li>
+          </ol>
+        </section>
+
+        <section>
+          <h2>判断训练</h2>
+          <p>先练眼睛。你能判断对，手才有方向。</p>
+
+          <div class="trainer" id="trainer">
+            <div class="trainer-title">He Character Trainer</div>
+            <div class="prompt" data-prompt></div>
+            <div class="choices" data-choices></div>
+            <div class="feedback" data-feedback></div>
+            <div class="stats">
+              <span>Streak <strong data-streak>0</strong></span>
+              <span>Best <strong data-best>0</strong></span>
+            </div>
+            <div class="actions">
+              <button class="primary" type="button" data-reset>Reset run</button>
+            </div>
+          </div>
+        </section>
+
+        <section>
+          <h2>今天作业</h2>
+          <ol class="practice-list">
+            <li>写 6 个“和”。</li>
+            <li>前三个只管右边“口”稳不稳，写慢一点。</li>
+            <li>后三个只管左边“禾”有没有少停顿，不要每笔都卡住。</li>
+            <li>最后圈两个：一个“最稳”，一个“最顺”。</li>
+            <li>拍照发给我，我只看这两个问题：右边稳不稳，左边僵不僵。</li>
+          </ol>
+        </section>
+
+        <section>
+          <h2>参考</h2>
+          <p>
+            这一课继续沿用第一课的观察框架：书法不是只看字形，也看身体动作如何形成平衡结构。可回看
+            <a href="https://www.metmuseum.org/essays/chinese-calligraphy">Met Chinese Calligraphy</a>
+            和
+            <a href="https://theme.npm.edu.tw/exh109/calligraphy10909/en/page-1.html">台北故宫书法展</a>。
+          </p>
+        </section>
+      </article>
+    </main>
+
+    <script src="../assets/choice-trainer.js"></script>
+    <script>
+      createChoiceTrainer(document.querySelector("#trainer"), [
+        {
+          prompt: "写“和”时，今天左边“禾”的目标是？",
+          choices: ["左轻少停", "左重多停", "左大右小", "左飞右散"],
+          answer: "左轻少停",
+          ok: "对。左边别僵，给右边留位置。",
+          bad: "不对。今天左边不是写重，而是轻一点、顺一点。"
+        },
+        {
+          prompt: "写“和”时，今天右边“口”的目标是？",
+          choices: ["右稳成方", "右飘成圈", "右快变斜", "右小消失"],
+          answer: "右稳成方",
+          ok: "对。右边是这个字的稳定点。",
+          bad: "不对。右边要稳住，不要跟着左边一起飘。"
+        },
+        {
+          prompt: "“少停顿”最像下面哪句话？",
+          choices: ["顺手接笔", "用力刹车", "越快越好", "随便乱连"],
+          answer: "顺手接笔",
+          ok: "对。不是快，是不要每一笔都死停。",
+          bad: "不对。少停顿不是乱连，也不是一味加速。"
+        },
+        {
+          prompt: "今天写完 6 个“和”，要圈哪两个？",
+          choices: ["最稳最顺", "最大最快", "最黑最重", "最飘最飞"],
+          answer: "最稳最顺",
+          ok: "对。一个看稳定，一个看顺手。",
+          bad: "不对。今天不比快，也不比重。"
+        }
+      ]);
+    </script>
+  </body>
+</html>

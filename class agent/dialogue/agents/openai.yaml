@@ -1,0 +1,5 @@
+interface:
+  display_name: "Dialogue"
+  short_description: "Handle one turn of class interaction dialogue"
+policy:
+  allow_implicit_invocation: true

@@ -1,0 +1,604 @@
+[
+  {
+    "time": "2026-09-09T06:03:12.192Z",
+    "speaker": "student",
+    "content": "ok",
+    "knowledge_point_id": "",
+    "source": "chat"
+  },
+  {
+    "time": "2026-09-09T06:03:12.192Z",
+    "speaker": "assistant",
+    "content": "好的，我们继续。",
+    "knowledge_point_id": "",
+    "source": "chat"
+  },
+  {
+    "time": "2026-09-09T06:04:06.009Z",
+    "speaker": "student",
+    "content": "下一个片段",
+    "knowledge_point_id": "",
+    "source": "chat"
+  },
+  {
+    "time": "2026-09-09T06:04:06.009Z",
+    "speaker": "assistant",
+    "content": "好的，我们继续播放下一个片段。",
+    "knowledge_point_id": "",
+    "source": "chat"
+  },
+  {
+    "time": "2026-09-09T06:08:24.845Z",
+    "speaker": "host",
+    "content": "/上课开始",
+    "knowledge_point_id": "",
+    "source": "chat"
+  },
+  {
+    "time": "2026-09-09T06:08:24.845Z",
+    "speaker": "assistant",
+    "content": "欢迎来到第3章《处理机调度》的课堂！我是你的课堂互动智能体。这节课我们主要围绕“处理机调度”展开，目标是让你理解调度为什么存在、由谁调度、按什么规则调度，并学会评价和比较常用调度算法。\n\n我们计划的学习安排是：先通过几个短视频片段了解调度的基本概念、三级调度、评价指标，然后重点学习 FCFS、SJF、抢占式与非抢占式、时间片轮转等算法，最后通过画甘特图、计算指标来巩固。过程中你可以随时提问或标记自己没掌握的地方，我会在片段结束后帮你处理。\n\n现在我们先从第一个片段开始，请准备好。",
+    "knowledge_point_id": "",
+    "source": "chat"
+  },
+  {
+    "time": "2026-09-09T06:08:41.283Z",
+    "speaker": "host",
+    "content": "/开始播放 seg-001",
+    "knowledge_point_id": "",
+    "source": "chat"
+  },
+  {
+    "time": "2026-09-09T06:08:41.283Z",
+    "speaker": "assistant",
+    "content": "现在开始播放片段 seg-001：调度是什么、为什么需要调度。请认真观看，有任何疑问可以随时标记，我会在片段结束后统一处理。",
+    "knowledge_point_id": "KP-001",
+    "source": "chat"
+  },
+  {
+    "time": "2026-09-09T06:08:57.036Z",
+    "speaker": "host",
+    "content": "/段落结束 seg-001",
+    "knowledge_point_id": "KP-001",
+    "source": "chat"
+  },
+  {
+    "time": "2026-09-09T06:08:57.036Z",
+    "speaker": "assistant",
+    "content": "片段 seg-001 已结束。简单总结：CPU 一次只能运行一个进程，当多个进程同时就绪时，系统需要一套规则来决定谁先用 CPU、用多久、何时切换，这套规则就是处理机调度。\n\n当前这个片段没有你标记的待处理问题。如果你对这部分内容有疑问，可以随时告诉我，或者我们继续播放下一个片段。",
+    "knowledge_point_id": "",
+    "source": "chat"
+  },
+  {
+    "time": "2026-09-09T06:09:33.386Z",
+    "speaker": "host",
+    "content": "/开始播放 seg-002",
+    "knowledge_point_id": "KP-002",
+    "source": "chat"
+  },
+  {
+    "time": "2026-09-09T06:09:33.386Z",
+    "speaker": "assistant",
+    "content": "现在开始播放片段 seg-002：三级调度：高级、中级、低级。请认真观看，有任何疑问可以随时标记，我会在片段结束后统一处理。",
+    "knowledge_point_id": "KP-002",
+    "source": "chat"
+  },
+  {
+    "time": "2026-09-09T06:09:58.987Z",
+    "speaker": "student",
+    "content": "这个片段我不太懂这三级调度的区别",
+    "knowledge_point_id": "KP-002",
+    "source": "chat"
+  },
+  {
+    "time": "2026-09-09T06:09:58.987Z",
+    "speaker": "assistant",
+    "content": "已记下，等这一段讲完一起处理。",
+    "knowledge_point_id": "KP-002",
+    "source": "chat"
+  },
+  {
+    "time": "2026-09-09T06:10:20.141Z",
+    "speaker": "host",
+    "content": "/段落结束 seg-002",
+    "knowledge_point_id": "KP-002",
+    "source": "chat"
+  },
+  {
+    "time": "2026-09-09T06:10:20.141Z",
+    "speaker": "assistant",
+    "content": "片段 seg-002 已结束。简单总结：三级调度分别处理不同阶段的任务——高级调度（作业调度）把外存中的作业调入内存并创建进程；中级调度（内存调度）负责对换，平衡内存占用；低级调度（进程调度）从就绪进程中选择一个分配 CPU。\n\n这个片段你有一个标记点：\n\n**point-004**：这个片段我不太懂这三级调度的区别（标记：没掌握）\n\n请回复编号（例如 point-004）来选择要处理的标记点。",
+    "knowledge_point_id": "",
+    "source": "chat"
+  },
+  {
+    "time": "2026-09-09T06:10:44.454Z",
+    "speaker": "student",
+    "content": "4",
+    "knowledge_point_id": "KP-002",
+    "source": "chat"
+  },
+  {
+    "time": "2026-09-09T06:10:44.454Z",
+    "speaker": "assistant",
+    "content": "好的，我们来看 point-004。你标记的是“没掌握”，原因是课堂提问。这个标记点对应知识点 KP-002（三级调度）。\n\n先别急，我们用一个小例子来区分三级调度。想象一个餐厅：\n- 高级调度（作业调度）：负责决定哪些顾客（作业）可以进入餐厅（内存）坐下来，变成“正在用餐的顾客”（进程）。\n- 中级调度（内存调度）：当餐厅座位不够时，让一些顾客暂时离开座位去外面等（对换），等有空位再回来。\n- 低级调度（进程调度）：在已经坐下的顾客中，决定谁先点菜、谁先用厨师（CPU）。\n\n现在我来问你一个小问题，确认一下你的理解：\n\n**问题**：一个作业还在外存（还没进入内存），它应该由哪一级调度来决定是否进入内存？",
+    "knowledge_point_id": "",
+    "source": "chat"
+  },
+  {
+    "time": "2026-09-11T07:32:21.793Z",
+    "speaker": "student",
+    "content": "/帮助",
+    "knowledge_point_id": "",
+    "source": "chat"
+  },
+  {
+    "time": "2026-09-11T07:32:21.793Z",
+    "speaker": "assistant",
+    "content": "请选择你想要的帮助方式（回复编号即可）：\n1. 给一个提示，但不要讲完整答案\n2. 换一个例子\n3. 换一种说法重新讲\n4. 讲慢一点，拆成更小步骤\n5. 先换一道更简单的题\n6. 今天先到这里",
+    "knowledge_point_id": "",
+    "source": "chat"
+  },
+  {
+    "time": "2026-09-11T07:32:47.154Z",
+    "speaker": "student",
+    "content": "/帮助",
+    "knowledge_point_id": "KP-002",
+    "source": "chat"
+  },
+  {
+    "time": "2026-09-11T07:32:47.154Z",
+    "speaker": "assistant",
+    "content": "请选择一种帮助方式（回复编号即可）：\n1. 给一个提示，但不要讲完整答案\n2. 换一个例子\n3. 换一种说法重新讲\n4. 讲慢一点，拆成更小的步骤\n5. 先换一道更简单的题\n6. 今天先到这里",
+    "knowledge_point_id": "",
+    "source": "chat"
+  },
+  {
+    "time": "2026-09-11T07:33:03.860Z",
+    "speaker": "host",
+    "content": "/上课开始/上课开始z",
+    "knowledge_point_id": "",
+    "source": "chat"
+  },
+  {
+    "time": "2026-09-11T07:33:03.860Z",
+    "speaker": "assistant",
+    "content": "欢迎来到本节课，主题是「第3章 处理机调度」。\n\n这节课我们要弄清楚三件事：\n1. 为什么需要调度——CPU 一次只能服务一个进程，系统必须决定先服务谁、服务多久、何时切换。\n2. 由谁调度——三级调度：高级调度（作业调度）、中级调度（内存调度/对换）、低级调度（进程调度）。\n3. 按什么规则调度——FCFS、SJF、HRRN、RR 等常用算法，以及怎么用周转时间、等待时间、响应时间评价它们。\n\n节奏安排：我们会一段一段地看课程片段。每段结束后，你可以从这段的标记点里选一个来答疑；上课过程中如果你有疑问，随时说出来，我会先记下来，等这一段讲完再一起处理。\n\n准备好了我们就开始播放第一段。",
+    "knowledge_point_id": "",
+    "source": "chat"
+  },
+  {
+    "time": "2026-09-11T12:36:09.707Z",
+    "speaker": "student",
+    "content": "/开始上课",
+    "knowledge_point_id": "",
+    "source": "chat"
+  },
+  {
+    "time": "2026-09-11T12:36:09.707Z",
+    "speaker": "assistant",
+    "content": "同学们好，欢迎来到第3章《处理机调度》。这一章我们分3学时来上，核心就一个问题：CPU 一次只能服务一个进程，那系统到底该先服务谁、服务多久、什么时候换人？\n\n我们的安排是这样的：我会分段播放讲解片段，每段结束后停下来，把这一段里的关键标记点列出来，由你自己选择想重点处理哪一个，我们再一起把它讲透。上课过程中你随时可以提问，我会先记下来，等这一段讲完再一起处理，不打断播放节奏。\n\n节奏上不用赶，这一章概念多、算法多，我们一小步一小步来。准备好了我们就开始第一段。",
+    "knowledge_point_id": "",
+    "source": "chat"
+  },
+  {
+    "time": "2026-09-11T12:38:07.102Z",
+    "speaker": "student",
+    "content": "开始吧",
+    "knowledge_point_id": "",
+    "source": "chat"
+  },
+  {
+    "time": "2026-09-11T12:38:07.102Z",
+    "speaker": "assistant",
+    "content": "好，那我们开始第一段。这一段讲的是“调度是什么、为什么需要调度”。\n\n请你带着一个问题看：CPU 明明一次只能跑一个进程，可系统里同时有那么多进程都想跑，那到底是谁、按什么规则决定先让谁上？看完这一段，你应该能用自己的话说出这个“决策规则”是什么。\n\n现在开始播放 seg-001。",
+    "knowledge_point_id": "",
+    "source": "chat"
+  },
+  {
+    "time": "2026-09-11T12:39:10.590Z",
+    "speaker": "student",
+    "content": "结束",
+    "knowledge_point_id": "",
+    "source": "chat"
+  },
+  {
+    "time": "2026-09-11T12:39:10.590Z",
+    "speaker": "assistant",
+    "content": "好，这节课我们先到这里。\n\n简单回顾一下今天的进度：我们开了第3章《处理机调度》的头，讲了这一章要解决的核心问题——CPU 一次只能跑一个进程，系统得决定先让谁上、跑多久、什么时候换人。第一段 seg-001 刚开始播放，还没有产生任何标记点，也没有出现可确认的掌握证据。\n\n也就是说，今天主要是开了个头，真正的三级调度、调度算法和评价指标都还没展开。下次我们接着从 seg-001 往下走，一段一段来。\n\n辛苦了，下次见。",
+    "knowledge_point_id": "",
+    "source": "chat"
+  },
+  {
+    "time": "2026-09-11T12:39:35.916Z",
+    "speaker": "student",
+    "content": "接着上一次的",
+    "knowledge_point_id": "",
+    "source": "chat"
+  },
+  {
+    "time": "2026-09-11T12:39:35.916Z",
+    "speaker": "assistant",
+    "content": "好，我们接着上次的继续。上次我们开了第3章《处理机调度》的头，刚开始播放第一段 seg-001，还没讲完。\n\n这一段要解决的核心问题是：CPU 一次只能跑一个进程，可系统里同时有那么多进程都想跑，那到底是谁、按什么规则决定先让谁上？这个“决策规则”就是处理机调度。\n\n我们先把 seg-001 这一段走完。请你带着这个问题看：如果系统不做任何调度，让每个进程都一直运行到结束，会出什么问题？\n\n现在继续播放 seg-001。",
+    "knowledge_point_id": "",
+    "source": "chat"
+  },
+  {
+    "time": "2026-09-12T09:21:13.666Z",
+    "speaker": "student",
+    "content": "/开始上课",
+    "knowledge_point_id": "",
+    "source": "chat"
+  },
+  {
+    "time": "2026-09-12T09:21:13.666Z",
+    "speaker": "assistant",
+    "content": "同学们好，欢迎来到第3章《处理机调度》。这节课我们要弄明白一件很关键的事：一台 CPU 一次只能服务一个进程，可系统里同时有那么多进程都想运行，到底该先让谁上、让多久、什么时候换人？这套决策规则就是处理机调度。\n\n这节课的安排是这样的：我们会先看一段讲“调度是什么、为什么需要调度”的片段，然后依次看三级调度、调度评价指标、FCFS 与 SJF、抢占式与非抢占式、时间片轮转与多级反馈队列。节奏上不赶进度，每看完一段，你可以把没听懂或没听到的地方标出来，我们再一起处理。\n\n现在我们先从第一段开始。",
+    "knowledge_point_id": "KP-001",
+    "source": "chat"
+  },
+  {
+    "time": "2026-09-12T09:23:01.914Z",
+    "speaker": "student",
+    "content": "/帮助 端到端验证",
+    "knowledge_point_id": "",
+    "source": "chat"
+  },
+  {
+    "time": "2026-09-12T09:23:01.914Z",
+    "speaker": "assistant",
+    "content": "请选择你需要的帮助（回复编号即可）：\n1. 给一个提示，但不要讲完整答案\n2. 换一个例子\n3. 换一种说法重新讲\n4. 讲慢一点，拆成更小步骤\n5. 先换一道更简单的题\n6. 今天先到这里",
+    "knowledge_point_id": "",
+    "source": "chat"
+  },
+  {
+    "time": "2026-09-13T01:23:42.164Z",
+    "speaker": "student",
+    "content": "/开始上课",
+    "knowledge_point_id": "",
+    "source": "chat"
+  },
+  {
+    "time": "2026-09-13T01:23:42.164Z",
+    "speaker": "assistant",
+    "content": "同学们好，欢迎来到第3章《处理机调度》。这节课我们要弄明白三件事：调度为什么存在、由谁来做、按什么规则做。\n\n本课安排是：先看一段短片了解“调度是什么、为什么需要调度”，然后我们停下来，你可以对不懂的地方打标记，我再针对你的标记逐个讲。之后我们会进入三级调度、抢占与非抢占、以及 FCFS、SJF、HRRN、RR 这些常用算法，最后一起做一道甘特图计算题。\n\n节奏上我会放慢，一次只问一个问题，你随时可以喊停。现在我们从第一段开始。",
+    "knowledge_point_id": "",
+    "source": "chat"
+  },
+  {
+    "time": "2026-09-13T01:24:55.678Z",
+    "speaker": "student",
+    "content": "/开始第一段",
+    "knowledge_point_id": "KP-001",
+    "source": "chat"
+  },
+  {
+    "time": "2026-09-13T01:24:55.678Z",
+    "speaker": "assistant",
+    "content": "好，我们开始播放第一段《调度是什么、为什么需要调度》。请认真看，看完这一段后我会做个小结，你可以对没听懂的地方打标记。",
+    "knowledge_point_id": "KP-001",
+    "source": "chat"
+  },
+  {
+    "time": "2026-09-13T01:25:35.491Z",
+    "speaker": "student",
+    "content": "/结束第一段",
+    "knowledge_point_id": "KP-001",
+    "source": "chat"
+  },
+  {
+    "time": "2026-09-13T01:25:35.491Z",
+    "speaker": "assistant",
+    "content": "第一段《调度是什么、为什么需要调度》看完了，我们小结一下：\n\n这一段的核心是——一台 CPU 同一时刻只能运行一个进程，但系统里往往有很多进程都想运行。所以系统必须做决定：先让谁用 CPU、让多久、什么时候打断、什么时候切换。这套决定规则就是处理机调度。\n\n这一段目前还没有标记点。你可以对这一段打标记：如果完全不懂、没听到、或者只是部分理解，告诉我，我来针对你的标记讲。也可以直接说“继续”，我们进入下一段《三级调度》。",
+    "knowledge_point_id": "",
+    "source": "chat"
+  },
+  {
+    "time": "2026-09-13T01:41:12.499Z",
+    "speaker": "student",
+    "content": "继续",
+    "knowledge_point_id": "KP-001",
+    "source": "chat"
+  },
+  {
+    "time": "2026-09-13T01:41:12.499Z",
+    "speaker": "assistant",
+    "content": "好，我们进入第二段《三级调度：高级、中级、低级》。请认真看，看完后我会做小结，你可以对没听懂的地方打标记。",
+    "knowledge_point_id": "KP-002",
+    "source": "chat"
+  },
+  {
+    "time": "2026-09-13T01:41:38.397Z",
+    "speaker": "student",
+    "content": "继续",
+    "knowledge_point_id": "KP-002",
+    "source": "chat"
+  },
+  {
+    "time": "2026-09-13T01:41:38.397Z",
+    "speaker": "assistant",
+    "content": "第二段《三级调度：高级、中级、低级》看完了，我们小结一下：\n\n这一段讲的是系统里有三个层次的调度，管的不是同一件事：\n- 高级调度（作业调度）：把外存里的作业调入内存，创建进程。\n- 中级调度（内存调度）：负责对换，平衡内存占用。\n- 低级调度（进程调度）：从就绪进程里挑一个，分配 CPU。\n\n这一段目前有一个待处理标记点：\n\n1. point-004 ｜ 标记：没掌握 ｜ 标签：课堂提问 ｜ 你的备注：这个片段我不太懂这三级调度的区别 ｜ 来源：http://localhost/class-history/ch3-process-scheduling?point=point-004\n\n请回复编号 1，我来针对这个标记点给你讲。",
+    "knowledge_point_id": "",
+    "source": "chat"
+  },
+  {
+    "time": "2026-09-13T01:44:40.453Z",
+    "speaker": "student",
+    "content": "继续",
+    "knowledge_point_id": "KP-002",
+    "source": "chat"
+  },
+  {
+    "time": "2026-09-13T01:44:40.453Z",
+    "speaker": "assistant",
+    "content": "好，我们进入第三段《调度评价指标》。请认真看，看完后我会做小结，你可以对没听懂的地方打标记。",
+    "knowledge_point_id": "KP-003",
+    "source": "chat"
+  },
+  {
+    "time": "2026-09-13T01:45:02.702Z",
+    "speaker": "student",
+    "content": "继续",
+    "knowledge_point_id": "",
+    "source": "chat"
+  },
+  {
+    "time": "2026-09-13T01:45:02.702Z",
+    "speaker": "assistant",
+    "content": "我们正在播放 seg-003《调度评价指标》。这一段讲的是怎么衡量一个调度算法好不好——周转时间、带权周转时间、平均等待时间、响应时间。先跟着往下听，等这一段结束我再帮你梳理，有问题也可以随时打标记。",
+    "knowledge_point_id": "KP-003",
+    "source": "chat"
+  },
+  {
+    "time": "2026-09-13T01:46:31.085Z",
+    "speaker": "student",
+    "content": "继续",
+    "knowledge_point_id": "KP-003",
+    "source": "chat"
+  },
+  {
+    "time": "2026-09-13T01:46:31.085Z",
+    "speaker": "assistant",
+    "content": "好，我们继续。当前正在播放 seg-003《调度评价指标》。这一段讲的是：周转时间看完成得快不快，等待时间看真正等 CPU 多久，响应时间看第一次获得响应快不快。等这段讲完，我会做段末总结，并列出可以选择的标记点。",
+    "knowledge_point_id": "KP-003",
+    "source": "chat"
+  },
+  {
+    "time": "2026-09-13T01:53:53.774Z",
+    "speaker": "student",
+    "content": "继续",
+    "knowledge_point_id": "KP-003",
+    "source": "chat"
+  },
+  {
+    "time": "2026-09-13T01:53:53.774Z",
+    "speaker": "assistant",
+    "content": "好的，我们继续。当前正在播放 seg-003《调度评价指标》。这一段讲完后我会做个小结，你可以先留意：周转时间、等待时间、响应时间分别是从哪个时刻算到哪个时刻。",
+    "knowledge_point_id": "KP-003",
+    "source": "chat"
+  },
+  {
+    "time": "2026-09-13T01:54:22.655Z",
+    "speaker": "student",
+    "content": "继续",
+    "knowledge_point_id": "KP-003",
+    "source": "chat"
+  },
+  {
+    "time": "2026-09-13T01:54:22.655Z",
+    "speaker": "assistant",
+    "content": "第三段《调度评价指标》看完了，我们小结一下：\n\n这一段讲的是怎么衡量一个调度算法好不好，有四个常用指标：\n- 周转时间 = 完成时刻 − 提交时刻，看一个作业从交到做完总共花了多久。\n- 带权周转时间 = 周转时间 ÷ 运行时间，把周转时间按作业本身长短归一化。\n- 等待时间：只累计在就绪队列里等 CPU 的时间，不含运行和 I/O。\n- 响应时间：从提交到第一次获得响应（第一次用上 CPU）的快慢。\n\n这一段目前还没有标记点。你可以对这一段打标记：如果完全不懂、没听到、或者只是部分理解，告诉我，我来针对你的标记讲。也可以直接说“继续”，我们进入下一段《FCFS 与 SJF》。",
+    "knowledge_point_id": "",
+    "source": "chat"
+  },
+  {
+    "time": "2026-09-13T01:56:43.096Z",
+    "speaker": "student",
+    "content": "继续",
+    "knowledge_point_id": "KP-003",
+    "source": "chat"
+  },
+  {
+    "time": "2026-09-13T01:56:43.096Z",
+    "speaker": "assistant",
+    "content": "seg-003《调度评价指标》已讲完，本段当前没有待处理的标记点。你可以：\n1. 对 seg-003 打个标记（例如：掌握 / 没掌握 + 完全不懂 / 没有听到 / 部分理解）；\n2. 或者直接回复“继续”，我们进入 seg-004《FCFS 与 SJF》。",
+    "knowledge_point_id": "",
+    "source": "chat"
+  },
+  {
+    "time": "2026-09-13T02:10:45.786Z",
+    "speaker": "student",
+    "content": "point-004",
+    "knowledge_point_id": "",
+    "source": "chat"
+  },
+  {
+    "time": "2026-09-13T02:10:45.786Z",
+    "speaker": "assistant",
+    "content": "已收到你选择的标记点 point-004。不过当前片段 seg-003 的开放标记点列表里没有 point-004，它属于之前片段的标记点。请先确认：你是想现在处理 point-004，还是先对 seg-003 打标记或继续进入 seg-004？",
+    "knowledge_point_id": "",
+    "source": "chat"
+  },
+  {
+    "time": "2026-09-13T02:11:03.700Z",
+    "speaker": "student",
+    "content": "现在处理 point-004",
+    "knowledge_point_id": "KP-004",
+    "source": "chat"
+  },
+  {
+    "time": "2026-09-13T02:11:03.700Z",
+    "speaker": "assistant",
+    "content": "好，我们进入 point-004 的答疑。这个标记点对应 seg-004《FCFS 与 SJF》（KP-004）。先确认一下你的卡点：FCFS 是先来先服务，SJF 是短作业优先。你能先用自己的话说说——为什么 SJF 的平均等待时间通常更短，却可能让长作业一直等不到 CPU？",
+    "knowledge_point_id": "KP-004",
+    "source": "chat"
+  },
+  {
+    "time": "2026-09-13T02:11:20.324Z",
+    "speaker": "student",
+    "content": "继续",
+    "knowledge_point_id": "KP-004",
+    "source": "chat"
+  },
+  {
+    "time": "2026-09-13T02:11:20.324Z",
+    "speaker": "assistant",
+    "content": "好，point-004 先处理到这里。这个标记点本轮没有产生掌握证据，先记为延后，等后面用例题再回来验证。当前片段 seg-004 还有一个开放标记点 point-003（没掌握 / 部分理解：FCFS 和 SJF 大概懂，但不会算平均等待时间）。你可以选择处理 point-003，或者继续进入下一段。",
+    "knowledge_point_id": "KP-004",
+    "source": "chat"
+  },
+  {
+    "time": "2026-09-13T02:19:11.104Z",
+    "speaker": "student",
+    "content": "处理 point-003",
+    "knowledge_point_id": "KP-004",
+    "source": "chat"
+  },
+  {
+    "time": "2026-09-13T02:19:11.104Z",
+    "speaker": "assistant",
+    "content": "好，我们处理 point-003：FCFS 和 SJF 的意思你懂，卡在“算平均等待时间”。先不急着算，我先问你一个小问题：等待时间，是从作业到达开始算，还是从作业开始运行开始算？",
+    "knowledge_point_id": "KP-003",
+    "source": "chat"
+  },
+  {
+    "time": "2026-09-13T02:19:27.733Z",
+    "speaker": "student",
+    "content": "继续",
+    "knowledge_point_id": "KP-004",
+    "source": "chat"
+  },
+  {
+    "time": "2026-09-13T02:19:27.733Z",
+    "speaker": "assistant",
+    "content": "当前标记点已处理结束，准备进入下一段。",
+    "knowledge_point_id": "KP-004",
+    "source": "chat"
+  },
+  {
+    "time": "2026-09-13T04:59:55.515Z",
+    "speaker": "student",
+    "content": "/开始上课",
+    "knowledge_point_id": "",
+    "source": "chat"
+  },
+  {
+    "time": "2026-09-13T04:59:55.515Z",
+    "speaker": "assistant",
+    "content": "欢迎回到第3章《处理机调度》。这节课我们继续把调度策略弄懂：先分清三级调度分别调度谁、在什么时候发生，再区分抢占式与非抢占式，然后重点练 FCFS 和 SJF 的甘特图与平均等待时间计算，最后看时间片轮转和多级反馈队列。节奏上我们会一段一段来，每段结束后你可以挑一个标记点，我们一起把它弄明白，不赶进度。",
+    "knowledge_point_id": "",
+    "source": "chat"
+  },
+  {
+    "time": "2026-09-13T05:00:49.291Z",
+    "speaker": "student",
+    "content": "/开始第一段",
+    "knowledge_point_id": "",
+    "source": "chat"
+  },
+  {
+    "time": "2026-09-13T05:00:49.291Z",
+    "speaker": "assistant",
+    "content": "现在开始播放第一段：seg-001《调度是什么、为什么需要调度》。",
+    "knowledge_point_id": "KP-001",
+    "source": "chat"
+  },
+  {
+    "time": "2026-09-13T05:01:27.732Z",
+    "speaker": "student",
+    "content": "标记该片段",
+    "knowledge_point_id": "KP-001",
+    "source": "chat"
+  },
+  {
+    "time": "2026-09-13T05:01:27.732Z",
+    "speaker": "assistant",
+    "content": "已记下，等这一段讲完一起处理。",
+    "knowledge_point_id": "KP-001",
+    "source": "chat"
+  },
+  {
+    "time": "2026-09-13T05:01:47.926Z",
+    "speaker": "student",
+    "content": "/结束第一段",
+    "knowledge_point_id": "KP-001",
+    "source": "chat"
+  },
+  {
+    "time": "2026-09-13T05:01:47.926Z",
+    "speaker": "assistant",
+    "content": "seg-001《调度是什么、为什么需要调度》讲完了。这一段的核心是：一台 CPU 同一时刻只能运行一个进程，但系统里往往有很多进程都想运行，所以系统必须决定先让谁用 CPU、让多久、什么时候打断和切换——这套决策规则就是处理机调度。\n\n这一段有 1 个待处理标记点，请选择编号：\n- point-005｜标记：没掌握｜原因标签：课堂提问｜学生备注：学生在 seg-001 播放中标记该片段，未说明具体卡点。｜来源链接：http://localhost:4173/student/#course/ch3-process-scheduling?point=point-005",
+    "knowledge_point_id": "KP-001",
+    "source": "chat"
+  },
+  {
+    "time": "2026-09-13T05:02:41.970Z",
+    "speaker": "student",
+    "content": "5",
+    "knowledge_point_id": "KP-001",
+    "source": "chat"
+  },
+  {
+    "time": "2026-09-13T05:02:41.970Z",
+    "speaker": "assistant",
+    "content": "好，我们来看 point-005。这个标记是“没掌握 + 课堂提问”，但你还没说明具体卡在哪，所以我先问一个小问题来定位：\n\n假设现在只有一个 CPU，同时有 3 个进程都想运行。为什么系统不能让这 3 个进程“同时一直跑下去”，而必须做调度？",
+    "knowledge_point_id": "KP-001",
+    "source": "chat"
+  },
+  {
+    "time": "2026-09-13T05:03:54.269Z",
+    "speaker": "student",
+    "content": "cpu 只有一个 数量不够",
+    "knowledge_point_id": "KP-001",
+    "source": "chat"
+  },
+  {
+    "time": "2026-09-13T05:03:54.269Z",
+    "speaker": "assistant",
+    "content": "对，你抓住了关键：CPU 只有一个，数量不够，所以没法让 3 个进程同时一直跑。\n\n那顺着这个再往前一步：既然 CPU 一次只能服务一个进程，系统就必须做三件事——先让谁用 CPU、让它用多久、什么时候换人。你能用自己的话说说，这三件事合起来叫什么吗？",
+    "knowledge_point_id": "KP-001",
+    "source": "chat"
+  },
+  {
+    "time": "2026-09-13T05:05:30.904Z",
+    "speaker": "student",
+    "content": "调度规则",
+    "knowledge_point_id": "KP-001",
+    "source": "chat"
+  },
+  {
+    "time": "2026-09-13T05:05:30.904Z",
+    "speaker": "assistant",
+    "content": "对，就是“调度规则”，也就是处理机调度。\n\n你现在的理解已经到位了：CPU 一次只能服务一个进程，所以系统要用一套规则决定谁先用、用多久、什么时候换人——这套规则就是处理机调度。\n\npoint-005 这个标记点我们就处理到这里。你可以输入“继续”，我们准备进入下一段。",
+    "knowledge_point_id": "KP-001",
+    "source": "chat"
+  },
+  {
+    "time": "2026-09-13T05:07:17.430Z",
+    "speaker": "student",
+    "content": "继续",
+    "knowledge_point_id": "KP-001",
+    "source": "chat"
+  },
+  {
+    "time": "2026-09-13T05:07:17.430Z",
+    "speaker": "assistant",
+    "content": "当前标记点已处理结束，准备进入下一段。",
+    "knowledge_point_id": "KP-001",
+    "source": "chat"
+  },
+  {
+    "time": "2026-09-13T05:07:40.819Z",
+    "speaker": "student",
+    "content": "/开始第二段",
+    "knowledge_point_id": "KP-002",
+    "source": "chat"
+  },
+  {
+    "time": "2026-09-13T05:07:40.819Z",
+    "speaker": "assistant",
+    "content": "现在开始播放第二段：seg-002《三级调度：高级、中级、低级》。",
+    "knowledge_point_id": "KP-002",
+    "source": "chat"
+  }
+]

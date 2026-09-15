@@ -1,0 +1,49 @@
+[
+  {
+    "history_id": "mh-001",
+    "student_id": "student-001",
+    "kp_id": "KP-002",
+    "old_stars": 0,
+    "new_stars": 1,
+    "old_status": "未检测",
+    "new_status": "已标注",
+    "source": "class_point",
+    "evidence": "新增标记点 point-001，标注原因：完全不懂。",
+    "annotation_id": "point-001",
+    "occurred_at": "2026-09-07T10:00:00+08:00"
+  },
+  {
+    "history_id": "mh-002",
+    "student_id": "student-001",
+    "kp_id": "KP-005",
+    "old_stars": 0,
+    "new_stars": 1,
+    "old_status": "未检测",
+    "new_status": "已标注",
+    "source": "class_point",
+    "evidence": "新增标记点 point-002，标注原因：没有听到。",
+    "annotation_id": "point-002",
+    "occurred_at": "2026-09-07T10:05:00+08:00"
+  },
+  {
+    "history_id": "mh-003",
+    "student_id": "student-001",
+    "kp_id": "KP-004",
+    "old_stars": 0,
+    "new_stars": 1,
+    "old_status": "未检测",
+    "new_status": "已标注",
+    "source": "class_point",
+    "evidence": "新增标记点 point-003，标注原因：部分理解。",
+    "annotation_id": "point-003",
+    "occurred_at": "2026-09-07T10:10:00+08:00"
+  },
+  {
+    "time": "2026-09-13T05:05:30.904Z",
+    "knowledge_point_id": "KP-001",
+    "old_status": "未检测",
+    "new_status": "初步理解",
+    "source": "dialogue",
+    "evidence": "学生在答疑中先说出“cpu 只有一个 数量不够”，再在提示下说出“调度规则”，能用自己的话说出 CPU 一次只能服务一个进程、系统需决定谁先用/用多久/何时换人，达到 KP-001 初步理解。"
+  }
+]

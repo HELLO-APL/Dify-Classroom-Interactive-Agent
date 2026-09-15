@@ -1,0 +1,14 @@
+{
+  "point_id": "point-004",
+  "student_id": "student-001",
+  "segment_id": "seg-004",
+  "knowledge_point_id": "KP-004",
+  "type": "question",
+  "mark_level": "没掌握",
+  "reason_tags": ["部分理解"],
+  "student_note": "FCFS 与 SJF 的差别说不清，SJF 为什么会让长作业饥饿也答不上来",
+  "source_link": "http://localhost:4173/student/#course/ch3-process-scheduling?point=point-004",
+  "status": "延后",
+  "created_at": "2026-09-09T14:09:58+08:00",
+  "updated_at": "2026-09-13T10:19:27+08:00"
+}

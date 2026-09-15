@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#133f3b" />
+    <title>teach 课堂对话</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="topbar">
+        <div class="brand">
+          <div class="brand-mark" aria-hidden="true">teach</div>
+          <div>
+            <h1>课堂对话</h1>
+            <p>n8n 单学生互动智能体</p>
+          </div>
+        </div>
+
+        <div class="topbar-actions">
+          <div id="connectionStatus" class="connection-status" data-state="checking">
+            <span class="status-dot" aria-hidden="true"></span>
+            <span id="connectionText">正在连接 n8n</span>
+          </div>
+
+          <button
+            id="voiceToggle"
+            class="icon-button"
+            type="button"
+            aria-label="开启语音"
+            title="开启语音"
+          >
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M11 5 6 9H3v6h3l5 4V5Z"></path>
+              <path d="M15.5 8.5a5 5 0 0 1 0 7"></path>
+              <path d="M18.5 5.5a9 9 0 0 1 0 13"></path>
+            </svg>
+          </button>
+
+          <button
+            id="settingsToggle"
+            class="icon-button"
+            type="button"
+            aria-label="课堂设置"
+            title="课堂设置"
+            aria-expanded="false"
+          >
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <circle cx="12" cy="12" r="3"></circle>
+              <path d="M19.4 15a1.7 1.7 0 0 0 .34 1.88l.06.06-2.12 2.12-.06-.06A1.7 1.7 0 0 0 15.74 19a1.7 1.7 0 0 0-1.02 1.56V21h-3v-.44A1.7 1.7 0 0 0 10.7 19a1.7 1.7 0 0 0-1.88.34l-.06.06-2.12-2.12.06-.06A1.7 1.7 0 0 0 7 15.34 1.7 1.7 0 0 0 5.44 14.3H5v-3h.44A1.7 1.7 0 0 0 7 10.28a1.7 1.7 0 0 0-.34-1.88l-.06-.06 2.12-2.12.06.06A1.7 1.7 0 0 0 10.66 6a1.7 1.7 0 0 0 1.06-1.56V4h3v.44A1.7 1.7 0 0 0 15.78 6a1.7 1.7 0 0 0 1.88-.34l.06-.06 2.12 2.12-.06.06A1.7 1.7 0 0 0 19.44 9.66 1.7 1.7 0 0 0 21 10.7v3h-.44A1.7 1.7 0 0 0 19.4 15Z"></path>
+            </svg>
+          </button>
+        </div>
+      </header>
+
+      <main class="chat-area">
+        <section id="messageList" class="message-list" aria-live="polite"></section>
+
+        <div id="notice" class="notice" role="status" hidden></div>
+
+        <form id="composer" class="composer">
+          <textarea
+            id="messageInput"
+            rows="1"
+            maxlength="6000"
+            placeholder="输入消息开始课堂互动"
+            aria-label="消息内容"
+          ></textarea>
+
+          <div class="composer-tools">
+            <button
+              id="stopVoiceButton"
+              class="text-button"
+              type="button"
+              hidden
+            >
+              停止播报
+            </button>
+
+            <button
+              id="sendButton"
+              class="send-button"
+              type="submit"
+              aria-label="发送消息"
+              title="发送消息"
+            >
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="m4 4 17 8-17 8 3-8-3-8Z"></path>
+                <path d="M7 12h10"></path>
+              </svg>
+            </button>
+          </div>
+        </form>
+      </main>
+
+      <aside id="settingsPanel" class="settings-panel" aria-hidden="true">
+        <div class="settings-header">
+          <div>
+            <p class="eyebrow">课堂配置</p>
+            <h2>连接与语音</h2>
+          </div>
+          <button
+            id="settingsClose"
+            class="icon-button icon-button-quiet"
+            type="button"
+            aria-label="关闭设置"
+            title="关闭设置"
+          >
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M6 6l12 12"></path>
+              <path d="M18 6 6 18"></path>
+            </svg>
+          </button>
+        </div>
+
+        <div class="settings-section">
+          <label class="field-label" for="ttsVoice">高级老师音色</label>
+          <select id="ttsVoice" disabled>
+            <option value="Cherry">芊悦 Cherry</option>
+          </select>
+          <p id="ttsHint" class="field-help">正在读取高级语音配置。</p>
+        </div>
+
+        <div class="settings-section">
+          <label class="field-label" for="voiceMode">自动朗读</label>
+          <select id="voiceMode">
+            <option value="teacher">仅老师引导</option>
+            <option value="all">每条 AI 回复</option>
+            <option value="off">关闭自动朗读</option>
+          </select>
+          <p class="field-help">普通回复仍可点击消息旁的喇叭手动播报。</p>
+        </div>
+
+        <div class="settings-section">
+          <span class="field-label">n8n 地址</span>
+          <code id="webhookDisplay" class="webhook-display">正在读取</code>
+        </div>
+
+        <div class="settings-section">
+          <span class="field-label">当前会话</span>
+          <code id="sessionDisplay" class="webhook-display"></code>
+          <button id="newSessionButton" class="secondary-button" type="button">
+            新建课堂会话
+          </button>
+        </div>
+      </aside>
+    </div>
+
+    <script type="module" src="/app.js"></script>
+  </body>
+</html>

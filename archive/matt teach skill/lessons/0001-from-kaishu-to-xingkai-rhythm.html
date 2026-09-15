@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>第一课：从楷书到行楷的节奏</title>
+    <link rel="stylesheet" href="../assets/course.css" />
+  </head>
+  <body>
+    <main class="page">
+      <article class="lesson">
+        <div class="eyebrow">Lesson 0001 · Xingkai</div>
+        <h1>从楷书到行楷：先学“节奏”，不要先学“连笔”</h1>
+        <p class="lead">
+          你已经练过楷书，所以第一步不是重新学笔画，而是把楷书的稳定结构，转成行楷的连贯节奏。
+          今天只练一个判断：哪些地方要稳，哪些地方可以顺。
+        </p>
+
+        <section>
+          <h2>今天的核心</h2>
+          <p>
+            行楷不是把楷书写快，也不是每一笔都连起来。行楷的第一层能力是：
+            <strong>重心仍然稳，笔势开始连。</strong>
+          </p>
+          <p>
+            大都会艺术博物馆的中国书法介绍强调，书法中的字形不是静态图案，而和身体动势、平衡结构有关。
+            台北故宫的书法展也把行书、楷书放在书体演变中理解：行书更流动，楷书更清晰稳定。
+          </p>
+        </section>
+
+        <section class="panel">
+          <h2>观察框架</h2>
+          <div class="grid">
+            <div class="sample-card">
+              <span class="sample-char">永</span>
+              <span class="caption">先看重心：字有没有站住</span>
+            </div>
+            <div class="sample-card">
+              <span class="sample-char">清</span>
+              <span class="caption">再看收放：哪一部分展开</span>
+            </div>
+            <div class="sample-card">
+              <span class="sample-char">和</span>
+              <span class="caption">最后看连贯：哪里顺势带过</span>
+            </div>
+          </div>
+        </section>
+
+        <section>
+          <h2>行楷判断训练</h2>
+          <p>
+            下面的小练习不是考知识点，而是训练你临写前的观察顺序。每次只选最关键的一项。
+          </p>
+
+          <div class="trainer" id="trainer">
+            <div class="trainer-title">Structure Recall Trainer</div>
+            <div class="prompt" data-prompt></div>
+            <div class="choices" data-choices></div>
+            <div class="feedback" data-feedback></div>
+            <div class="stats">
+              <span>Streak <strong data-streak>0</strong></span>
+              <span>Best <strong data-best>0</strong></span>
+            </div>
+            <div class="actions">
+              <button class="primary" type="button" data-reset>Reset run</button>
+            </div>
+          </div>
+        </section>
+
+        <section>
+          <h2>今天的 12 分钟练习</h2>
+          <ol class="practice-list">
+            <li>选 3 个常用字：永、清、和。</li>
+            <li>每个字先慢写 3 遍，目标是重心稳定。</li>
+            <li>再每个字写 3 遍，只允许一处自然连带，不要强行连笔。</li>
+            <li>最后圈出最好的一遍，写一句原因：它好在哪里？</li>
+          </ol>
+          <p>
+            下一次你可以把练习结果描述给我：哪个字最难、哪一笔最不稳、你觉得哪一遍最好。我会据此安排第二课。
+          </p>
+        </section>
+
+        <section>
+          <h2>推荐资源</h2>
+          <p>
+            先读大都会艺术博物馆的
+            <a href="https://www.metmuseum.org/essays/chinese-calligraphy">Chinese Calligraphy</a>
+            中关于书法、身体动势和平衡结构的部分。它能帮你理解：练行楷不是只追求“快”，而是追求有骨架的流动。
+          </p>
+        </section>
+      </article>
+    </main>
+
+    <script src="../assets/choice-trainer.js"></script>
+    <script>
+      createChoiceTrainer(document.querySelector("#trainer"), [
+        {
+          prompt: "从楷书转行楷时，第一优先级是什么？",
+          choices: ["尽量连笔", "重心稳定", "写得最快", "笔画变少"],
+          answer: "重心稳定",
+          ok: "对。行楷先稳住字，再让笔势流动。",
+          bad: "先别急着连。行楷的底层仍然是稳定结构。"
+        },
+        {
+          prompt: "临写一个行楷字，观察顺序更合理的是？",
+          choices: ["重心收放连贯", "颜色速度纸张", "大小粗细工具", "笔顺数量装饰"],
+          answer: "重心收放连贯",
+          ok: "对。先站住，再看展开，最后看顺势。",
+          bad: "这个方向太外在。先看结构，再看笔势。"
+        },
+        {
+          prompt: "今天练“永、清、和”的重点是什么？",
+          choices: ["每笔都连", "自然一处", "完全草化", "只求速度"],
+          answer: "自然一处",
+          ok: "对。只允许一处自然连带，避免乱连。",
+          bad: "今天不是追求炫技，而是训练可控的连贯。"
+        }
+      ]);
+    </script>
+  </body>
+</html>

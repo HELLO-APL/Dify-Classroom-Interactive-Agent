@@ -1,0 +1,35 @@
+{
+  "workflowId": "jB1zQp2zlHb3Fwk6",
+  "versionName": "Fix state file binary conversion",
+  "versionDescription": "Replace the unreliable Move Binary Data step with a Code node that explicitly creates the data binary property before writing state files.",
+  "operations": [
+    {
+      "type": "removeNode",
+      "nodeName": "State Markdown to Binary"
+    },
+    {
+      "type": "addNode",
+      "node": {
+        "name": "State Markdown to Binary",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [2368, 224],
+        "parameters": {
+          "mode": "runOnceForAllItems",
+          "language": "javaScript",
+          "jsCode": "const inputItems = $input.all();\nconst outputItems = [];\nfor (let index = 0; index < inputItems.length; index++) {\n  const item = inputItems[index];\n  const targetFile = String(item.json.targetFile || '');\n  const fileContent = String(item.json.fileContent || '');\n  if (!targetFile || !fileContent) continue;\n  const fileName = targetFile.split('/').pop() || 'state.txt';\n  const binaryData = await this.helpers.prepareBinaryData(\n    Buffer.from(fileContent, 'utf8'),\n    fileName,\n    'text/plain',\n  );\n  outputItems.push({\n    json: { targetFile, fileContent },\n    binary: { data: binaryData },\n    pairedItem: { item: index },\n  });\n}\nreturn outputItems;"
+        }
+      }
+    },
+    {
+      "type": "addConnection",
+      "source": "Prepare State Writes",
+      "target": "State Markdown to Binary"
+    },
+    {
+      "type": "addConnection",
+      "source": "State Markdown to Binary",
+      "target": "Write State Files"
+    }
+  ]
+}

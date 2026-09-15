@@ -1,0 +1,32 @@
+{
+  "workflowId": "jB1zQp2zlHb3Fwk6",
+  "versionName": "Add explicit speech classification",
+  "versionDescription": "Return speechKind from Format Chat Reply so the classroom frontend can distinguish teacher guidance from answer replies without guessing.",
+  "operations": [
+    {
+      "type": "updateNodeParameters",
+      "nodeName": "Format Chat Reply",
+      "replace": true,
+      "parameters": {
+        "mode": "manual",
+        "includeOtherFields": false,
+        "assignments": {
+          "assignments": [
+            {
+              "id": "chat-output",
+              "name": "output",
+              "value": "={{ JSON.stringify({ text: (($(\"Parse Agent JSON\").item.json.output && $(\"Parse Agent JSON\").item.json.output.reply) ? $(\"Parse Agent JSON\").item.json.output.reply : \"本轮已处理\"), speechKind: (($('Normalize Input').item.json.studentMessage || '').match(/^\\/(上课开始|开始播放|段落结束|下课)/) || String($(\"Parse Agent JSON\").item.json.output.dialogue_log_md || '').match(/^- speaker:\\s*host\\s*$/m)) ? 'teacher_guidance' : 'answer' }) }}",
+              "type": "string"
+            },
+            {
+              "id": "speech-kind",
+              "name": "speechKind",
+              "value": "={{ ($('Normalize Input').item.json.studentMessage || '').match(/^\\/(上课开始|开始播放|段落结束|下课)/) || String($(\"Parse Agent JSON\").item.json.output.dialogue_log_md || '').match(/^- speaker:\\s*host\\s*$/m) ? 'teacher_guidance' : 'answer' }}",
+              "type": "string"
+            }
+          ]
+        }
+      }
+    }
+  ]
+}

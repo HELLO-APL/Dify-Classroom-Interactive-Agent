@@ -1,0 +1,81 @@
+{
+  "version": 2,
+  "student_id": "student-001",
+  "updated_at": "2026-09-13T10:19:27+08:00",
+  "knowledge_points": {
+    "KP-001": {
+      "kp_id": "KP-001",
+      "stars": 0,
+      "status": "未检测",
+      "assessment_status": "未考核",
+      "annotation_ids": [],
+      "last_annotation_id": null,
+      "last_source": "knowledge_base",
+      "last_evidence": "",
+      "updated_at": null
+    },
+    "KP-002": {
+      "kp_id": "KP-002",
+      "stars": 1,
+      "status": "已标注",
+      "assessment_status": "未考核",
+      "annotation_ids": [
+        "point-001"
+      ],
+      "last_annotation_id": "point-001",
+      "last_source": "class_point",
+      "last_evidence": "标记点 point-001 已解决；当前只有标注和答疑过程，尚无正式考核证据。",
+      "updated_at": "2026-09-07T10:00:00+08:00"
+    },
+    "KP-003": {
+      "kp_id": "KP-003",
+      "stars": 0,
+      "status": "未检测",
+      "assessment_status": "未考核",
+      "annotation_ids": [],
+      "last_annotation_id": null,
+      "last_source": "knowledge_base",
+      "last_evidence": "",
+      "updated_at": null
+    },
+    "KP-004": {
+      "kp_id": "KP-004",
+      "stars": 1,
+      "status": "已标注",
+      "assessment_status": "未考核",
+      "annotation_ids": [
+        "point-003",
+        "point-004"
+      ],
+      "last_annotation_id": "point-004",
+      "last_source": "class_point",
+      "last_evidence": "存在两条相关标注，均记录为延后；尚无正式考核证据。",
+      "updated_at": "2026-09-13T10:19:27+08:00"
+    },
+    "KP-005": {
+      "kp_id": "KP-005",
+      "stars": 1,
+      "status": "已标注",
+      "assessment_status": "未考核",
+      "annotation_ids": [
+        "point-002"
+      ],
+      "last_annotation_id": "point-002",
+      "last_source": "class_point",
+      "last_evidence": "标记点 point-002 仍待处理；当前只有标注，尚无考核证据。",
+      "updated_at": "2026-09-07T10:05:00+08:00"
+    },
+    "KP-006": {
+      "kp_id": "KP-006",
+      "stars": 0,
+      "status": "未检测",
+      "assessment_status": "未考核",
+      "annotation_ids": [],
+      "last_annotation_id": null,
+      "last_source": "knowledge_base",
+      "last_evidence": "",
+      "updated_at": null
+    }
+  },
+  "KP-001": "初步理解"
+}

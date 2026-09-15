@@ -1,0 +1,192 @@
+:root {
+  color-scheme: light;
+  --ink: #1f1f1d;
+  --muted: #68645e;
+  --paper: #fffdf8;
+  --wash: #f4efe6;
+  --line: #d8d0c3;
+  --accent: #9b3f32;
+  --accent-soft: #f0d8d2;
+  --ok: #2f7d4f;
+  --bad: #9a342c;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: #ece7de;
+  color: var(--ink);
+  font-family: "Noto Serif SC", "Songti SC", "Microsoft YaHei", serif;
+  line-height: 1.7;
+}
+
+.page {
+  max-width: 920px;
+  margin: 0 auto;
+  padding: 40px 24px 64px;
+}
+
+.lesson {
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 34px;
+  box-shadow: 0 18px 50px rgba(44, 34, 20, 0.08);
+}
+
+.eyebrow {
+  color: var(--accent);
+  font-family: Arial, sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+h1,
+h2 {
+  line-height: 1.25;
+}
+
+h1 {
+  margin: 10px 0 12px;
+  font-size: 34px;
+}
+
+h2 {
+  margin-top: 30px;
+  font-size: 22px;
+}
+
+.lead {
+  color: var(--muted);
+  font-size: 18px;
+}
+
+.panel {
+  margin: 24px 0;
+  padding: 22px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fffaf0;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.sample-card {
+  min-height: 120px;
+  padding: 18px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #ffffff;
+}
+
+.sample-char {
+  display: block;
+  font-size: 46px;
+  line-height: 1.1;
+  text-align: center;
+}
+
+.caption {
+  display: block;
+  margin-top: 12px;
+  color: var(--muted);
+  font-size: 14px;
+  text-align: center;
+}
+
+.trainer {
+  padding: 22px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #ffffff;
+}
+
+.trainer-title {
+  color: var(--accent);
+  font-family: Arial, sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.prompt {
+  margin: 12px 0 16px;
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.choices {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+button {
+  min-height: 50px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fff;
+  color: var(--ink);
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+button:hover {
+  border-color: var(--accent);
+}
+
+.feedback {
+  min-height: 32px;
+  margin: 16px 0 8px;
+  font-weight: 700;
+}
+
+.feedback.ok {
+  color: var(--ok);
+}
+
+.feedback.bad {
+  color: var(--bad);
+}
+
+.stats {
+  display: flex;
+  gap: 18px;
+  color: var(--muted);
+  font-family: Arial, sans-serif;
+}
+
+.actions {
+  margin-top: 18px;
+}
+
+.primary {
+  background: var(--ink);
+  color: #fff;
+}
+
+.practice-list li {
+  margin: 8px 0;
+}
+
+@media (max-width: 680px) {
+  .lesson {
+    padding: 24px;
+  }
+
+  .grid,
+  .choices {
+    grid-template-columns: 1fr;
+  }
+}

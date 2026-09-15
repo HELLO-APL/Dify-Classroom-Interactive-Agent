@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#153c3a" />
+    <title>学生学习空间</title>
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23153c3a'/%3E%3Ctext x='32' y='43' text-anchor='middle' font-size='34' fill='%23f4c7a8'%3E%E5%AD%A6%3C/text%3E%3C/svg%3E" />
+    <link rel="stylesheet" href="/student/styles.css" />
+    <script src="/student/icons.js"></script>
+  </head>
+  <body>
+    <div class="workspace-shell">
+      <aside class="sidebar">
+        <a class="brand" href="#courses" aria-label="返回课程中心">
+          <span class="brand-mark">学</span>
+          <span>
+            <strong>学习空间</strong>
+            <small>student workspace</small>
+          </span>
+        </a>
+
+        <nav class="main-nav" aria-label="学生空间导航">
+          <a href="#courses" data-nav="courses">
+            <i data-lucide="library-big" aria-hidden="true"></i>
+            <span>课程中心</span>
+          </a>
+          <a href="#mastery" data-nav="mastery">
+            <i data-lucide="chart-no-axes-combined" aria-hidden="true"></i>
+            <span>掌握情况</span>
+          </a>
+          <a href="#reviews" data-nav="reviews">
+            <i data-lucide="notebook-tabs" aria-hidden="true"></i>
+            <span>查缺补漏</span>
+          </a>
+          <a href="#annotations" data-nav="annotations">
+            <i data-lucide="bookmark-check" aria-hidden="true"></i>
+            <span>标注记录</span>
+          </a>
+        </nav>
+
+        <div class="sidebar-note">
+          <span class="student-avatar">同</span>
+          <span>
+            <strong id="studentName">同学</strong>
+            <small>持续记录学习证据</small>
+          </span>
+        </div>
+      </aside>
+
+      <main id="app" class="main-content" tabindex="-1">
+        <div class="loading-state">
+          <span class="loading-dot"></span>
+          <p>正在读取课程与学习记录</p>
+        </div>
+      </main>
+    </div>
+
+    <dialog id="annotationDialog" class="annotation-dialog">
+      <form id="annotationForm" method="dialog">
+        <header class="dialog-header">
+          <div>
+            <p class="eyebrow">课堂标注</p>
+            <h2 id="annotationTitle">添加标注</h2>
+          </div>
+          <button
+            class="icon-button"
+            type="button"
+            data-close-dialog
+            aria-label="关闭标注窗口"
+            title="关闭"
+          >
+            <i data-lucide="x" aria-hidden="true"></i>
+          </button>
+        </header>
+
+        <div class="dialog-context">
+          <span id="annotationCourse"></span>
+          <span id="annotationKnowledgePoint"></span>
+        </div>
+
+        <fieldset class="field-group">
+          <legend>这次标注属于</legend>
+          <label class="choice-row">
+            <input type="radio" name="markLevel" value="没掌握" checked />
+            <span>没掌握</span>
+            <small>作为学习线索保留，不禁用后续掌握评估</small>
+          </label>
+          <label class="choice-row">
+            <input type="radio" name="markLevel" value="掌握" />
+            <span>掌握</span>
+            <small>这是自我判断，不会直接变成 5 星</small>
+          </label>
+        </fieldset>
+
+        <fieldset class="field-group">
+          <legend>原因标签</legend>
+          <div class="tag-choices">
+            <label><input type="checkbox" name="reasonTags" value="完全不懂" />完全不懂</label>
+            <label><input type="checkbox" name="reasonTags" value="没有听到" />没有听到</label>
+            <label><input type="checkbox" name="reasonTags" value="部分理解" />部分理解</label>
+            <label><input type="checkbox" name="reasonTags" value="课堂提问" />课堂提问</label>
+          </div>
+        </fieldset>
+
+        <label class="field-group">
+          <span class="field-label">备注</span>
+          <textarea
+            id="annotationNote"
+            name="studentNote"
+            rows="4"
+            maxlength="500"
+            placeholder="写清卡在哪里，后续复习会沿用这条记录"
+          ></textarea>
+        </label>
+
+        <p id="annotationError" class="form-error" hidden></p>
+
+        <footer class="dialog-actions">
+          <button class="secondary-button" type="button" data-close-dialog>
+            取消
+          </button>
+          <button class="primary-button" type="submit">
+            <i data-lucide="save" aria-hidden="true"></i>
+            保存标注
+          </button>
+        </footer>
+      </form>
+    </dialog>
+
+    <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
+
+    <script type="module" src="/student/app.js"></script>
+  </body>
+</html>
