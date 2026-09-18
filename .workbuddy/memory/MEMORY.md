@@ -31,10 +31,28 @@
 
 ## 关键文件
 - `orchestrator/ORCHESTRATOR.md` — LangGraph 编排规范(State schema / 10 节点 / tick 时钟 / judge_advance 判定 / 分层装配 / 降级行为 / 校验清单)
+- `orchestrator/HOW-IT-WORKS.md` — 大白话运作过程说明 + 关键 LangGraph 写法(给想理解编排器的人看)
+- `orchestrator/graph_skeleton.py` — LangGraph 骨架代码(11 节点签名 + 建图 + 路由)，非完整实现
 - `orchestrator/clock_reference.py` — 时钟与切幕的可运行参考实现 + 11 条回归测试
 - `orchestrator/MIGRATION.md` — 新旧路径映射与变更记录
 - `rules/interaction/MASTERY-STAR-RULES.md` — 0-5 星唯一权威规则
 - `lesson-data/lesson-plan.json` — 老师端编排入口
+
+## 关键 LangGraph 写法约定
+- **判断写进 state，路由只读不判**：`judge_advance` 做全部判定并把结果写 `target_phase`；
+  `route_after_judge` 只 `return "next_stage" if target_phase else "stay"`。
+  好处：路由函数极简、判定可单测、判决有痕迹(`advance_reason`)。
+- **`stage_snapshots` 必须用 `Annotated[list[dict], operator.add]`**：否则第二幕快照会覆盖第一幕。
+- **节点签名统一 `(state) -> dict`，只返回要改的字段**，不返回的保持原值。
+- **自动推进的本质是图里有一个环**：每轮对话重新评估一次，不是后台定时器。
+
+## 环境备注
+- 本机 bash 的 PATH 缺 dirname/ls 等，需 `export PATH="/usr/bin:/bin:$PATH"` 修复；PowerShell stdout 会吞输出，优先用 bash+文件落盘。
+- workbuddy.link 分享页数据可从 workbuddy-space-static.codebuddy.work/page/<id>/0/conversation-data.json 直接拉取。
+- **离线环境装不了 langgraph**(pip: no matching distribution)。
+  验证图拓扑的替代手法：伪造 `langgraph.graph.StateGraph` 桩，记录 add_node/add_edge/
+  add_conditional_edges 调用后断言，无需真实依赖。
+- 隔离 Python 环境: `C:/Users/陈怡凡/.workbuddy/binaries/python/envs/default/`
 
 ## 环境备注
 - 本机 bash 的 PATH 缺 dirname/ls 等,需 `export PATH="/usr/bin:/bin:$PATH"` 修复;PowerShell stdout 会吞输出,优先用 bash+文件落盘。
