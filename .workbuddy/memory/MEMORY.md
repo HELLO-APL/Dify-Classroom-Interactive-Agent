@@ -21,14 +21,17 @@
 ## 编排器时钟约定（2026-09-18 确认方案 B）
 - **真实时钟，不靠 LLM 估算时长**。`now` 由会话层**注入 state**，图内节点一律不调 `datetime.now()` → 图是纯函数，可单测可回放。
 - **新增 `tick` 节点**（总计 10 个节点）：所有时间计算集中于此，是唯一读时间的地方。
-- **净时长 vs 墙钟时长**：`*_teach_minutes`（扣挂机，**切幕只看这个**）/ `*_elapsed_minutes`（真实流逝，老师复盘用）。
-- **缺席判定只看 `now - last_activity_at`，绝不看本幕开了多久**。曾因此出现致命 bug：幕超宽限后即使学生刚说过话也永久判缺席 → 预算冻结 → 课下不来。`clock_reference.py` 有专门回归用例守这条。
-- `clock_policy`（在 `lesson-plan.json`）：`idle_gap_minutes=8`、`idle_credit_ratio=0.25`、`absence_grace_minutes=15`、`absent_policy=extend`。缺失用默认值，不阻断开课。
-- 参考实现 + 12 条回归测试：`orchestrator/clock_reference.py`（改时钟逻辑后必须重跑）。
+- **时钟只算已花时长，仅此而已**：
+  `stage_elapsed_minutes = now - stage_started_at`，`lesson_elapsed_minutes = now - lesson_started_at`。
+- ⚠️ **编排器绝不判断学生是否缺席**（2026-09-18 用户明确要求）。
+  曾误加 `clock_policy`（挂机判定/缺席策略/净时长折算），已全部删除。
+  学生是否在场是老师的事；编排器引入这类判定只会让切幕变得不可预测。
+  不要以任何理由重新引入 absent / idle / 有效时长折算等概念。
+- 本地无 `datetime.now()` 依赖，便于测试。
 
 ## 关键文件
 - `orchestrator/ORCHESTRATOR.md` — LangGraph 编排规范(State schema / 10 节点 / tick 时钟 / judge_advance 判定 / 分层装配 / 降级行为 / 校验清单)
-- `orchestrator/clock_reference.py` — 时钟与切幕的可运行参考实现 + 回归测试
+- `orchestrator/clock_reference.py` — 时钟与切幕的可运行参考实现 + 11 条回归测试
 - `orchestrator/MIGRATION.md` — 新旧路径映射与变更记录
 - `rules/interaction/MASTERY-STAR-RULES.md` — 0-5 星唯一权威规则
 - `lesson-data/lesson-plan.json` — 老师端编排入口
