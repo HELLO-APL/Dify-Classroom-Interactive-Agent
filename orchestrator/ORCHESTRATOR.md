@@ -304,21 +304,30 @@ load_plan ──► tick ──► load_context ──► classify_turn
 
 ## 10. 节点职责总表
 
-> 本仓库**不含 n8n，也不含前端**。以下 10 个节点是要实现的目标结构，与旧实现的对照见 `MIGRATION.md`。
+> 本仓库**不含 n8n，也不含前端**。以下 11 个节点在 `orchestrator/agent.py` 中**已实现并可运行**，`graph_skeleton.py` 是去掉血肉的骨架版，两者的对照见 `MIGRATION.md`。
 
-| 节点 | 必须实现 | 说明 |
-| --- | --- | --- |
-| `load_plan` | 是 | 读 `lesson-data/lesson-plan.json` 并校验 |
-| `tick` | 是 | **真实时钟结算**，唯一读时间的地方 |
-| `load_context` | 是 | 按 `host_phase` 分层装配上下文 |
-| `classify_turn` | 是 | 判断本轮输入类型 |
-| `host_event` | 是 | 处理开场/收尾等主持事件 |
-| `teach` | 是 | 执行当前阶段的教学（模型调用） |
-| `judge_mastery` | 是 | 按 rubric 判星级 |
-| `judge_advance` | 是 | **编排核心**，决定是否切幕 |
-| `advance_stage` | 是 | 写阶段快照 + 切到下一幕 |
-| `write_state` | 是 | 落盘 `runtime/**` 与 `runtime/data/**` |
-| `format_reply` | 是 | 组装回复文本与播报标记 |
+| 节点 | 必须实现 | 说明 | 实现位置 |
+| --- | --- | --- | --- |
+| `load_plan` | 是 | 读 `lesson-data/lesson-plan.json` 并做 7 项启动校验 | 已实现 |
+| `tick` | 是 | **真实时钟结算**，唯一读时间的地方；同时是每轮复位点 | 已实现 |
+| `load_context` | 是 | 按 `host_phase` 分层装配上下文 + 组装问题队列 | 已实现 |
+| `classify_turn` | 是 | 判断本轮输入类型 | 已实现 |
+| `host_event` | 是 | 处理开场/收尾等主持事件 | 已实现 |
+| `teach` | 是 | 执行当前阶段的教学（`AGENT_LLM_*` 有则调模型，无则降级脚本） | 已实现 |
+| `judge_mastery` | 是 | 按 rubric 判星级（确定性：证据组匹配） | 已实现 |
+| `judge_advance` | 是 | **编排核心**，决定是否切幕 | 已实现 |
+| `advance_stage` | 是 | 写阶段快照 + 切到下一幕（未关闭目标带入下一幕） | 已实现 |
+| `write_state` | 是 | 落盘 `runtime/**` 与 `runtime/data/**`（追加不覆盖） | 已实现 |
+| `format_reply` | 是 | 组装回复文本与播报标记 | 已实现 |
 
 **没有的东西（不要实现）**：任何标注相关节点、任何 n8n 节点、任何前端页面。
+
+### 与规范的实现差异（已确认）
+
+| 规范没写、实现里补的 | 为什么需要 |
+| --- | --- |
+| `tick` 兼做每轮复位（清 `turn_evidence` / `mastery_updates` / `target_phase`） | 这些字段跨 checkpoint 持久化，不复位会让上一轮的判定渗进本轮 |
+| `intro` 不参与时长预算，开场一轮后立即切幕 | intro 是系统幕，没有老师配置的分钟数 |
+| 未关闭目标（`unresolved`）带入下一幕 | 复述没答透的难点，探究阶段应优先追问 |
+| 讲解阶段的 `unresolved` = 全部段落 KP | "讲过"不等于"关闭"，快照里才能看出哪些还没证据 |
 

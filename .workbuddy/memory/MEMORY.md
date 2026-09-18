@@ -30,13 +30,26 @@
 - 本地无 `datetime.now()` 依赖，便于测试。
 
 ## 关键文件
-- `orchestrator/ORCHESTRATOR.md` — LangGraph 编排规范(State schema / 10 节点 / tick 时钟 / judge_advance 判定 / 分层装配 / 降级行为 / 校验清单)
-- `orchestrator/HOW-IT-WORKS.md` — 大白话运作过程说明 + 关键 LangGraph 写法(给想理解编排器的人看)
+- `orchestrator/ORCHESTRATOR.md` — LangGraph 编排规范(State schema / 11 节点 / tick 时钟 / judge_advance 判定 / 分层装配 / 降级行为 / 校验清单)
+- `orchestrator/agent.py` — **真实 LangGraph 实现**（11 节点，可跑）。LLM 可插拔：
+  配置 `AGENT_LLM_BASE_URL` / `AGENT_LLM_API_KEY` / `AGENT_LLM_MODEL`（任意 OpenAI 兼容端点）后
+  `teach` 调真模型；未配置则走降级脚本。**`judge_mastery` 始终确定性**（证据组关键词匹配），星级不依赖模型。
+- `orchestrator/run_demo.py` — 模拟一节课（19 轮带时间戳），`demo-run.md` 是真实运行实录
+- `orchestrator/HOW-IT-WORKS.md` — 大白话运作过程说明 + 关键 LangGraph 写法
 - `orchestrator/graph_skeleton.py` — LangGraph 骨架代码(11 节点签名 + 建图 + 路由)，非完整实现
 - `orchestrator/clock_reference.py` — 时钟与切幕的可运行参考实现 + 11 条回归测试
 - `orchestrator/MIGRATION.md` — 新旧路径映射与变更记录
 - `rules/interaction/MASTERY-STAR-RULES.md` — 0-5 星唯一权威规则
 - `lesson-data/lesson-plan.json` — 老师端编排入口
+
+## 真实实现补充的约定（2026-09-18）
+- **`tick` 兼做每轮复位点**：清 `turn_evidence` / `mastery_updates` / `target_phase` / `advance_reason`。
+  这些字段跨 checkpoint 持久化，不复位上一轮判决会渗进本轮判定。
+- **未关闭目标 `unresolved` 带入下一幕**：复述没答透的 KP，探究阶段优先追问（`advance_stage` 的 `carried`）。
+- **讲解阶段 `unresolved` = 全部段落 KP**（讲过 ≠ 关闭），快照才有意义。
+- **提问三级链的坑**：`stages/*/questions.md` 里"填写格式/示例"在 code fence 内，解析前必须剥掉，
+  否则会把示例当真题。当前实际生效路径是第 2 级（`TMISSION.md 检验问题`）。
+- `langgraph-checkpoint-sqlite` 本机装不上，checkpointer 用 `InMemorySaver`；SQL 版待装包后替换。
 
 ## 关键 LangGraph 写法约定
 - **判断写进 state，路由只读不判**：`judge_advance` 做全部判定并把结果写 `target_phase`；
@@ -49,11 +62,12 @@
 ## 环境备注
 - 本机 bash 的 PATH 缺 dirname/ls 等，需 `export PATH="/usr/bin:/bin:$PATH"` 修复；PowerShell stdout 会吞输出，优先用 bash+文件落盘。
 - workbuddy.link 分享页数据可从 workbuddy-space-static.codebuddy.work/page/<id>/0/conversation-data.json 直接拉取。
-- **离线环境装不了 langgraph**(pip: no matching distribution)。
-  验证图拓扑的替代手法：伪造 `langgraph.graph.StateGraph` 桩，记录 add_node/add_edge/
-  add_conditional_edges 调用后断言，无需真实依赖。
+- **langgraph 已装**：`pip install langgraph` 成功（1.2.11），装在隔离环境
+  `C:/Users/陈怡凡/.workbuddy/binaries/python/envs/default/`（早期会话里"离线装不上"已过期）。
+  `langgraph-checkpoint-sqlite` 仍装不上（镜像无此包）。
+  装不上依赖时验证图拓扑的替代手法：伪造 `langgraph.graph.StateGraph` 桩，记录
+  add_node/add_edge/add_conditional_edges 调用后断言。
 - 隔离 Python 环境: `C:/Users/陈怡凡/.workbuddy/binaries/python/envs/default/`
-
-## 环境备注
-- 本机 bash 的 PATH 缺 dirname/ls 等,需 `export PATH="/usr/bin:/bin:$PATH"` 修复;PowerShell stdout 会吞输出,优先用 bash+文件落盘。
-- workbuddy.link 分享页数据可从 workbuddy-space-static.codebuddy.work/page/<id>/0/conversation-data.json 直接拉取。
+- **同一文件禁止并行 Edit**：并发多条 Edit 打到同一文件时，后写的会覆盖先写的，
+  表现为"代码来回变、刚改的又没了"（2026-09-18 在 `agent.py` 中招三次）。
+  同一文件的多处修改必须串行一条条改。

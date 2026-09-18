@@ -131,7 +131,8 @@
 
 - [x] `runtime/TMISSION.md` 补 `检验问题` 字段（每个核心难点）——2026-09-17 已补齐 4 条，并挂上 `KP-xxx` 编号
 - [x] 补充"无定时器时如何自动切幕"的方案——2026-09-18 采用**真实时钟**（方案 B），见 `ORCHESTRATOR.md` 第 5 节，参考实现 `clock_reference.py`（12/12 回归通过）
+- [x] 按 `ORCHESTRATOR.md` 实现 11 个节点（LangGraph）——2026-09-18 完成，`orchestrator/agent.py`，并用 `run_demo.py` 跑通一整节课（实录见 `demo-run.md`，两次运行结果逐字节一致）
+- [x] 会话层接入 `now` 注入——`agent.run_one_turn()` 每轮注入时间戳，图内节点一律不读系统时钟
 - [ ] `rules/KNOWLEDGE-BASE.md` 填 4 个探究字段（待老师提供内容）
-- [ ] 按 `ORCHESTRATOR.md` 实现 10 个节点（LangGraph）
 - [ ] `stages/*/questions.md` 与 `rubric.md` 按需填写（待老师提供内容）
-- [ ] 会话层接入 `now` 注入（每轮把时间戳写进 state）
+- [ ] 接真实 LLM：配置 `AGENT_LLM_BASE_URL` / `AGENT_LLM_API_KEY` / `AGENT_LLM_MODEL` 即可，代码无需改动

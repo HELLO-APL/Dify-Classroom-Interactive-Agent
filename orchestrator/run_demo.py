@@ -1,0 +1,119 @@
+"""在 LangGraph 上跑一节完整的课 —— 演示脚本。
+
+模拟一名学生与编排器的一整节课（时间戳注入 now，可回放）：
+  10:00  开场（intro）
+  10:01-10:22  讲解阶段：6 个 segment 按累计时长自动切换，预算 22 分钟到点收尾切幕
+  10:23-10:31  复述阶段：三级兜底链取 TMISSION 检验问题；
+               3 个 KP 完整复述（3星）、1 个零散（2星，未关闭）
+  10:32-10:38  深层探究阶段：探究字段为空 → 降级为通用探究问题；
+               学生回答浅 → 星级不动 → 预算 7 分钟到点切幕
+  10:38  下课总结（ending）
+
+跑完打印：每一轮的对话与编排状态、阶段快照、掌握档案。
+落盘产物在 runtime/（演示后由外部恢复空白模板）。
+
+用法：python orchestrator/run_demo.py
+"""
+
+import sys
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+
+from agent import build_graph, run_one_turn  # noqa: E402
+
+try:
+    from langgraph.checkpoint.memory import InMemorySaver
+except ImportError:  # 兼容旧名称
+    from langgraph.checkpoint.memory import MemorySaver as InMemorySaver
+
+
+def at(hm: str) -> str:
+    return f"2026-09-18T{hm}:00+08:00"
+
+
+# (时间, 说话人, 学生消息) —— 消息取自一名"中等偏上但不完美"的模拟学生
+TURNS = [
+    ("10:00",   "host",    "开始上课"),
+    ("10:01",   "student", "老师好"),
+    ("10:04",   "student", "嗯，CPU 一次只能跑一个，所以要有人决定谁先用"),
+    ("10:09",   "student", "明白了，作业进内存是高级调度的事"),
+    ("10:13",   "student", "好"),
+    ("10:17",   "student", "好"),
+    ("10:20",   "student", "懂了"),
+    ("10:22",   "student", "OK"),
+    # ── 复述阶段 ──
+    ("10:23",   "student", "来吧"),
+    ("10:24",   "student", "高级调度把作业从外存调入内存变成进程，"
+                           "低级调度从就绪进程里挑一个上 CPU，中级调度负责对换、平衡内存"),
+    ("10:25",   "student", "系统会打断 A，因为 B 的运行时间更短，"
+                           "抢占式就是允许中断当前进程"),
+    ("10:27",   "student", "SJF 就是短作业先跑，长作业会倒霉一直等着……"
+                           "怎么缓解来着我记不清了"),
+    ("10:28",   "student", "周转时间是从提交到完成；等待时间是在就绪队列里等的时间；"
+                           "响应时间是第一次拿到 CPU 的快慢"),
+    ("10:31",   "student", "好的"),
+    # ── 深层探究阶段 ──
+    ("10:32",   "student", "好"),
+    ("10:34",   "student", "呃，就是短作业先跑吧，排队的时候短的不用等太久"),
+    ("10:36",   "student", "反正就是快的先走，没什么特别的"),
+    ("10:38",   "student", "行"),
+    # ── 收尾 ──
+    ("10:39",   "student", "谢谢老师"),
+]
+
+
+def main() -> int:
+    graph = build_graph(checkpointer=InMemorySaver())
+    session = "demo-001"
+
+    print("=" * 72)
+    print("主动引导智能体 · LangGraph 编排器 —— 一节课的完整模拟")
+    print("=" * 72)
+
+    last_phase = None
+    for hm, speaker, msg in TURNS:
+        now = at(hm)
+        st = run_one_turn(graph, session, now, msg, speaker)
+
+        phase = st["host_phase"]
+        tag = "▶" if phase != last_phase else " "
+        print(f"\n{tag} [{hm}] ({phase} | 本幕 {st['stage_elapsed_minutes']}/"
+              f"{st['stage_budget_minutes']} 分 | 全课 {st['lesson_elapsed_minutes']} 分)")
+        if speaker == "student":
+            print(f"  学生> {msg}")
+        else:
+            print(f"  主持> {msg}")
+        reply = (st.get("reply_text") or "").replace("\n", "\n        ")
+        print(f"  老师> {reply}")
+
+        if st.get("advance_reason"):
+            print(f"  ⚙ 判定: {st['advance_reason']}")
+        ev = st.get("turn_evidence") or []
+        if ev:
+            print(f"  ✔ 证据: {'; '.join(ev)}")
+        stars = st.get("kp_stars") or {}
+        if stars:
+            print("  ★ 星级: " + "  ".join(
+                f"{k}={'★'*v}" for k, v in sorted(stars.items())))
+        last_phase = phase
+
+    # ── 课后的档案 ──
+    st = dict(graph.get_state({"configurable": {"thread_id": session}}).values)
+    print("\n" + "=" * 72)
+    print("阶段快照（stage_snapshots，Annotated 累加，一幕一条）：")
+    for snap in st.get("stage_snapshots") or []:
+        print(f"  - {snap['snapshot_id']} {snap['stage']} "
+              f"({snap['stage_elapsed_minutes']} 分) "
+              f"关闭 {snap['targets_closed']} / 未关 {snap['targets_open']}")
+        print(f"      stars: {snap['stars_snapshot']}")
+
+    print("\n落盘文件已更新：")
+    for p in ("runtime/DIALOGUE-LOG.md", "runtime/data/mastery-state.json",
+              "runtime/data/mastery-history.json", "runtime/data/dialogue-log.json"):
+        print(f"  - {p} ({Path(p).stat().st_size} bytes)")
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

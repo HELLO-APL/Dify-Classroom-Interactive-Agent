@@ -59,10 +59,29 @@
 │       ├── mastery-history.json
 │       └── dialogue-log.json
 │
-└── orchestrator/                # 编排器结构规范
-    ├── ORCHESTRATOR.md          #   ★ LangGraph 状态图、节点、条件边、调度约定
-    ├── clock_reference.py       #   真实时钟与切幕判定的可运行参考实现 + 回归测试
-    └── MIGRATION.md             #   从旧仓库迁移的映射与变更记录
+└── orchestrator/                # 编排器：规范 + 实现 + 演示
+    ├── ORCHESTRATOR.md          #   ★ LangGraph 状态图、节点、条件边、调度约定（权威规范）
+    ├── agent.py                 #   ★ 真实 LangGraph 实现（11 节点，可直接跑）
+    ├── run_demo.py              #   ★ 模拟一节课并打印编排过程
+    ├── demo-run.md              #     上面这个脚本的一次真实运行实录
+    ├── graph_skeleton.py        #     骨架版（只看 LangGraph 怎么写，不跑）
+    ├── HOW-IT-WORKS.md          #     自然语言讲运作过程
+    ├── clock_reference.py       #     真实时钟与切幕判定的参考实现 + 回归测试
+    └── MIGRATION.md             #     从旧仓库迁移的映射与变更记录
+```
+
+### 跑起来（真实 LangGraph）
+
+```bash
+# 依赖装在隔离 Python 环境里
+pip install langgraph
+python orchestrator/run_demo.py        # 模拟一节课（讲解 → 复述 → 探究 → 下课）
+```
+
+`teach` 节点支持真实大模型：设置任意 OpenAI 兼容端点的环境变量后自动切换，未配置则走降级脚本（详见 ORCHESTRATOR.md 第 8 节）：
+
+```bash
+AGENT_LLM_BASE_URL=https://.../v1  AGENT_LLM_API_KEY=xxx  AGENT_LLM_MODEL=qwen-plus
 ```
 
 ---
