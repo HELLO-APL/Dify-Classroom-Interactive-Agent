@@ -13,6 +13,13 @@ __pycache__/
 .idea/
 .DS_Store
 
+# 本地密钥（复制 .env.local.example 为 .env.local 后填写）
+.env.local
+.env
+
+# 闲置的旧实现（保留在磁盘但不入版本库）
+.workbuddy/trash/
+
 # 编排器 Checkpointer（本地状态）
 orchestrator/*.sqlite
 orchestrator/*.sqlite-journal

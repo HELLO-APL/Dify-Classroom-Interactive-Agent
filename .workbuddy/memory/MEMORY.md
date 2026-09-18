@@ -34,6 +34,9 @@
 - `orchestrator/agent.py` — **真实 LangGraph 实现**（11 节点，可跑）。LLM 可插拔：
   配置 `AGENT_LLM_BASE_URL` / `AGENT_LLM_API_KEY` / `AGENT_LLM_MODEL`（任意 OpenAI 兼容端点）后
   `teach` 调真模型；未配置则走降级脚本。**`judge_mastery` 始终确定性**（证据组关键词匹配），星级不依赖模型。
+- `orchestrator/llm_probe.py` — 端点探针。**必须先用它验证再跑整节课**：teach 在 LLM 失败时静默降级，
+  整节课照样跑完，所以"跑通了"≠"接上了"。
+- `orchestrator/demo-run.md` — 接 DeepSeek 真模型的运行实录
 - `orchestrator/run_demo.py` — 模拟一节课（19 轮带时间戳），`demo-run.md` 是真实运行实录
 - `orchestrator/HOW-IT-WORKS.md` — 大白话运作过程说明 + 关键 LangGraph 写法
 - `orchestrator/graph_skeleton.py` — LangGraph 骨架代码(11 节点签名 + 建图 + 路由)，非完整实现
@@ -59,8 +62,23 @@
 - **节点签名统一 `(state) -> dict`，只返回要改的字段**，不返回的保持原值。
 - **自动推进的本质是图里有一个环**：每轮对话重新评估一次，不是后台定时器。
 
+## ★ teach 必须是两层（2026-09-18 实测踩出来的架构铁律）
+- **第一层 确定性骨架**（永远执行）：决定讲哪一段 / 问哪一题 / 给什么反馈 → 产出 `directive`
+- **第二层 LLM 润色**（可选）：只把 directive 变成自然语言；失败就用骨架的朴素文案
+- **铁律：模型不决定讲什么、问什么，只决定怎么措辞。**
+  最初写成"有 LLM 就调模型然后 return" → 段落不推进、问题不挂起、证据不匹配 → **编排器被架空**。
+- 三条约束（每条都是实测踩出来的）：
+  1. `directive` **必须带内容锚点** —— 曾只写"往深讲一层"，模型编出了本课没有的"马尔可夫性质"（幻觉）
+  2. 传给模型的文案**不能有 KP 编号** —— 模型会照着念。用 `kp_title()` 转中文标题
+  3. 收尾轮 directive 要**显式禁止新内容**
+- 验证方式：有/无 LLM 跑同一串时间戳，剔除 `reply_text` 后编排结果应逐行相同（已验证 51/51）。
+- ⚠️ 接 LLM 后**不再逐字节可回放**（模型输出不确定）。可回放性只在降级模式成立——
+  它来自时钟注入，与逐字回放是两件事。
+
 ## 环境备注
 - 本机 bash 的 PATH 缺 dirname/ls 等，需 `export PATH="/usr/bin:/bin:$PATH"` 修复；PowerShell stdout 会吞输出，优先用 bash+文件落盘。
+- **Git Bash 的 `/tmp` = `C:\Users\陈怡凡\AppData\Local\Temp`**；用 Python 读 /tmp 下的文件必须转成
+  Windows 路径（`cygpath -w /tmp`），否则报 `can't open file`。
 - workbuddy.link 分享页数据可从 workbuddy-space-static.codebuddy.work/page/<id>/0/conversation-data.json 直接拉取。
 - **langgraph 已装**：`pip install langgraph` 成功（1.2.11），装在隔离环境
   `C:/Users/陈怡凡/.workbuddy/binaries/python/envs/default/`（早期会话里"离线装不上"已过期）。

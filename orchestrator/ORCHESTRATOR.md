@@ -99,7 +99,33 @@ class ClassroomState(TypedDict):
 | 3 | `load_context` | 分层装配上下文 | 见第 4 节 | state 不变（组装 prompt） |
 | 4 | `classify_turn` | 判断本轮输入类型 | 学生消息 + `host_phase` | state: `speaker` / 路由标记 |
 | 5 | `host_event` | 处理主持人事件 | 主持人指令 | state: 目标 `host_phase` |
-| 6 | `teach` | 执行本幕教学（大模型节点） | 组装好的上下文 + `stages/<id>/prompt.md` | state: `reply_text` / `turn_evidence` / `current_question` |
+| 6 | `teach` | 执行本幕教学（**两层结构**，见 3.1） | 骨架 + `stages/<id>/prompt.md` | state: `reply_text` / `turn_evidence` / `current_question` |
+
+### 3.1 `teach` 必须是两层：编排骨架 + 表达
+
+> 这条是**实测踩出来的**，不是设计时的设想。
+> 最初把 `teach` 写成"有 LLM 就调模型、调完直接返回"，结果接上真模型后
+> 段落不推进、问题不挂起、证据不匹配 —— **编排被模型架空**，课变成了自由聊天。
+
+```
+第一层  确定性骨架          ← 永远执行，决定"本轮干什么"
+        讲哪一段 / 问哪一题 / 给什么反馈
+        ↓ 产出 directive（给模型的指令）
+第二层  LLM 润色（可选）    ← 只决定"这话怎么说"
+        失败就用骨架的朴素文案，编排状态一字不差
+```
+
+**铁律：模型不决定讲什么、问什么，只决定怎么措辞。**
+
+由此得到三个必须遵守的约束：
+
+| 约束 | 原因 |
+| --- | --- |
+| 给模型的 `directive` **必须带内容锚点** | 曾只写"往深讲一层"，模型在无范围约束下编出了本课没有的"马尔可夫性质、参数估计" |
+| 传给模型的文案**不能含 KP 编号** | 模型会照着念，学生听到"KP-004"毫无意义。用 `kp_title()` 转中文标题 |
+| 收尾轮的 `directive` 要显式禁止新内容 | 否则模型会在"总结一下"里继续往外扩 |
+
+**验证方式**：分别在有/无 LLM 下跑同一串时间戳，剔除 `reply_text` 后其余输出应**逐行相同**（已验证 51/51 行一致）。
 | 7 | `judge_mastery` | 按 rubric 判星级 | `stages/<id>/rubric.md` + `rules/interaction/MASTERY-STAR-RULES.md` | state: `mastery_updates` |
 | 8 | `judge_advance` | **判定是否切幕**（编排核心·进度） | 见第 5 节 | state: 目标 `host_phase` / `advance_reason` |
 | 9 | `write_state` | 落盘所有状态 | state | `runtime/**` / `runtime/data/**` |

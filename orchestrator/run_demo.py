@@ -20,7 +20,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-from agent import build_graph, run_one_turn  # noqa: E402
+from agent import LLM_DIAG, build_graph, llm_available, run_one_turn  # noqa: E402
 
 try:
     from langgraph.checkpoint.memory import InMemorySaver
@@ -85,7 +85,9 @@ def main() -> int:
         else:
             print(f"  主持> {msg}")
         reply = (st.get("reply_text") or "").replace("\n", "\n        ")
-        print(f"  老师> {reply}")
+        # 区分"大模型生成"与"降级脚本"，否则接没接上 AI 看不出来
+        src = "AI  " if st.get("llm_used") else "脚本"
+        print(f"  老师[{src}]> {reply}")
 
         if st.get("advance_reason"):
             print(f"  ⚙ 判定: {st['advance_reason']}")
@@ -107,6 +109,18 @@ def main() -> int:
               f"({snap['stage_elapsed_minutes']} 分) "
               f"关闭 {snap['targets_closed']} / 未关 {snap['targets_open']}")
         print(f"      stars: {snap['stars_snapshot']}")
+
+    # ── LLM 接入实况 ──
+    print("\n" + "─" * 72)
+    if llm_available():
+        print(f"LLM：已接入   调用 {LLM_DIAG['calls']} 次 → "
+              f"成功 {LLM_DIAG['ok']} / 失败 {LLM_DIAG['failed']}")
+        if LLM_DIAG["last_error"]:
+            print(f"  末次失败原因：{LLM_DIAG['last_error']}")
+        print("  说明：模型只润色表达；切幕与星级由确定性骨架决定，不受影响。")
+    else:
+        print("LLM：未配置（三个 AGENT_LLM_* 变量缺任一）→ teach 全程走降级脚本")
+        print("  配好后重跑即可看到 [AI] 标记。")
 
     print("\n落盘文件已更新：")
     for p in ("runtime/DIALOGUE-LOG.md", "runtime/data/mastery-state.json",

@@ -78,11 +78,30 @@ pip install langgraph
 python orchestrator/run_demo.py        # 模拟一节课（讲解 → 复述 → 探究 → 下课）
 ```
 
-`teach` 节点支持真实大模型：设置任意 OpenAI 兼容端点的环境变量后自动切换，未配置则走降级脚本（详见 ORCHESTRATOR.md 第 8 节）：
+### 接真实大模型（可选）
+
+`teach` 节点接任意 OpenAI 兼容端点。**不配也能跑完整节课**，只是老师的话是模板生成的。
 
 ```bash
-AGENT_LLM_BASE_URL=https://.../v1  AGENT_LLM_API_KEY=xxx  AGENT_LLM_MODEL=qwen-plus
+cp .env.local.example .env.local    # 然后填入你的 Key（该文件已进 .gitignore）
+python orchestrator/llm_probe.py    # 先单独验证端点通不通
+python orchestrator/run_demo.py     # 再跑整节课
 ```
+
+也可以直接用环境变量，不用建文件：
+
+```bash
+export AGENT_LLM_BASE_URL=https://api.deepseek.com/v1
+export AGENT_LLM_API_KEY=sk-xxx
+export AGENT_LLM_MODEL=deepseek-chat
+```
+
+> **模型只负责措辞，不负责编排。** `teach` 分两层：确定性骨架决定"讲哪段、问哪题"，
+> 模型把指令润色成自然语言。所以模型挂了课照常上完，切幕与星级一字不差。
+> 已验证：有/无 LLM 两种方式跑同一串时间戳，剔除老师说的话后 **51 行编排结果逐行相同**。
+> 详见 `ORCHESTRATOR.md` 第 3.1 节。
+
+演示输出会标出每轮回复的来源：`老师[AI  ]>` 是模型生成，`老师[脚本]>` 是降级文案。
 
 ---
 
