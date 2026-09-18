@@ -109,26 +109,26 @@
 
 ### 1.1 时间怎么算（真实时钟）
 
-编排器**用真实时间**推进，不看"聊了几轮"。每轮由会话层把当前时间戳（`now`）注入状态，编排器只做算术——这样切幕逻辑可单测、可回放。
+编排器**用真实时间**推进，不看"聊了几轮"，也不靠 LLM 估算时长。每轮由会话层把当前时间戳（`now`）注入状态，编排器只做一件事：
 
-关键点在**挂机治理**：间隔 10 分钟和认真想 10 分钟，对"上完这门课"的贡献不同。
+```
+stage_elapsed_minutes  = now - stage_started_at     # 本幕已花分钟
+lesson_elapsed_minutes = now - lesson_started_at    # 本课已花分钟
+```
+
+到点（`minutes` 预算耗尽）就切下一幕。**编排器不管学生是否在场** —— 那是老师的事。
 
 ```json
-"clock_policy": {
-  "idle_gap_minutes": 8,          // 单轮间隔超过此值 → 只按 25% 记课时
-  "idle_credit_ratio": 0.25,      // 上一条的折扣比例
-  "absence_grace_minutes": 15,    // 单轮间隔超过此值 → 判为"人不在"，记 0
-  "absent_policy": "extend"       // 人不在时：extend 冻结 / skip 跳过 / end 结束
+"advance_policy": {
+  "on_budget_exhausted": "wrap_up",       // 预算耗尽：wrap_up 收尾后切 / force_advance 立即切 / extend 允许延长
+  "on_evidence_reached": "advance",       // 证据达标：切幕
+  "min_stage_minutes": 2,                 // 最短幕时长，防止秒切
+  "max_stage_overrun_minutes": 3          // extend 模式下最多超时多少
 }
 ```
 
-| 概念 | 说明 |
-| --- | --- |
-| **净时长** `*_teach_minutes` | 扣除挂机后的有效课时，**切幕只看这个** |
-| **墙钟时长** `*_elapsed_minutes` | 真实流逝时间，给老师复盘用 |
-
-> 两个口径都记录，老师才看得出"这 45 分钟里有多少是在发呆"。
-> 判定"人不在"只看**上一轮距今多久**，不看这一幕开了多久——否则幕一旦超过宽限就会永久冻结预算，课下不来。参考实现与 12 条回归测试见 `orchestrator/clock_reference.py`。
+> 时间戳由会话层注入而非编排器自己取，是为了让切幕逻辑**可单测、可回放**。
+> 参考实现与 11 条回归测试见 `orchestrator/clock_reference.py`。
 
 ### 2. 填课程内容
 

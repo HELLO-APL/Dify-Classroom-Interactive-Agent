@@ -1,77 +1,36 @@
-"""编排器时钟与切幕判定的参考实现 + 单测。
+"""编排器时钟与切幕判定的参考实现 + 回归测试。
 
 用途：验证 ORCHESTRATOR.md 第 5/6 节的逻辑真的能跑通。
-时间全部来自 state["now"] 输入，所以可以喂任意时间戳回放整节课。
+
+设计要点：时间全部来自 state["now"] 输入，编排器不自己取时间。
+所以喂一串时间戳就能回放整节课，切幕逻辑也因此可单测。
+
+范围：只负责"这门课/这一幕花了多少分钟"，不判断学生是否在场。
 """
 
-from datetime import datetime, timedelta
-
-ABSENT = "absent"          # 判定为"人不在"
-NORMAL = "normal"
+from datetime import datetime
 
 
 def _dt(s: str) -> datetime:
     return datetime.fromisoformat(s)
 
 
-def _minutes(a: str, b: str) -> float:
-    return (_dt(a) - _dt(b)).total_seconds() / 60
-
-
-def classify_gap(gap: float, idle_gap: float, grace: float) -> tuple[str, float]:
-    """把时间间隔归类，返回 (类型, 计课时比例)。"""
-    if gap >= grace:
-        return ABSENT, 0.0
-    if gap >= idle_gap:
-        return NORMAL, 0.25
-    return NORMAL, 1.0
+def _minutes(now: str, since: str) -> float:
+    return round((_dt(now) - _dt(since)).total_seconds() / 60, 2)
 
 
 def tick(state: dict) -> dict:
-    """结算本轮耗时。ORCHESTRATOR.md 第 5.5 节的实现。"""
-    now = state["now"]
-    last = state.get("last_activity_at") or state["lesson_started_at"]
-    gap = _minutes(now, last)
-
-    kind, fraction = classify_gap(
-        gap, state["idle_gap_minutes"], state["absence_grace_minutes"]
-    )
-    credited = gap * fraction
-
-    # 本幕墙钟时长：仅用于记录与展示
-    stage_wall = _minutes(now, state["stage_started_at"])
-
-    # 缺席判定只看"上一轮活动距今多久"。
-    # 不能看"这幕总共开了多久"——否则幕一旦超过宽限，学生即使刚说过话
-    # 也会被永久判为缺席，预算将永远无法触发切幕（回归测试抓到过这个 bug）。
-    absence = kind
-
+    """算出本幕与本课已花的真实分钟数。ORCHESTRATOR.md 第 5.3 节。"""
     return {
-        "gap_kind": kind,
-        "absence_kind": absence,
-        "idle_elapsed_minutes": round(gap, 2),
-        "idle_fraction": fraction,
-        "stage_teach_minutes": round(state["stage_teach_minutes"] + credited, 2),
-        "lesson_teach_minutes": round(state["lesson_teach_minutes"] + credited, 2),
-        "stage_elapsed_minutes": round(stage_wall, 2),
-        "lesson_elapsed_minutes": round(_minutes(now, state["lesson_started_at"]), 2),
-        "last_activity_at": now,
+        "stage_elapsed_minutes": _minutes(state["now"], state["stage_started_at"]),
+        "lesson_elapsed_minutes": _minutes(state["now"], state["lesson_started_at"]),
     }
 
 
 def judge_advance(state: dict) -> dict:
     """切幕判定。ORCHESTRATOR.md 第 6 节。返回 {'action', 'reason'}。"""
-    # 0. 人不在：只在这一轮距上轮超宽限、且本幕墙钟也超宽限时才触发
-    if state.get("absence_kind") == ABSENT:
-        policy = state["absent_policy"]
-        if policy == "end":
-            return {"action": "next_stage", "reason": "缺席：提前结束"}
-        if policy == "skip":
-            return {"action": "next_stage", "reason": "缺席：跳过本幕"}
-        return {"action": "stay", "reason": "缺席：预算冻结，等待学生回来"}
-
-    # 1. 最短幕时长保护（净时长）
-    if state["stage_teach_minutes"] < state["min_stage_minutes"]:
+    # 1. 最短幕时长保护
+    if state["stage_elapsed_minutes"] < state["min_stage_minutes"]:
         return {"action": "stay", "reason": "未达最短幕时长"}
 
     # 2. evidence 模式：目标没关完就不走
@@ -85,8 +44,8 @@ def judge_advance(state: dict) -> dict:
                 return {"action": "next_stage", "reason": "目标已达成，证据充分"}
 
     # 4. 预算
-    if state["stage_teach_minutes"] >= state["stage_budget_minutes"]:
-        overrun = state["stage_teach_minutes"] - state["stage_budget_minutes"]
+    if state["stage_elapsed_minutes"] >= state["stage_budget_minutes"]:
+        overrun = state["stage_elapsed_minutes"] - state["stage_budget_minutes"]
         mode = state["on_budget_exhausted"]
         if mode == "force_advance":
             return {"action": "next_stage", "reason": "预算耗尽：强制切幕"}
@@ -108,15 +67,8 @@ def base_state(**over) -> dict:
         "now": t0,
         "lesson_started_at": t0,
         "stage_started_at": t0,
-        "last_activity_at": t0,
-        "stage_teach_minutes": 0.0,
-        "lesson_teach_minutes": 0.0,
         "stage_elapsed_minutes": 0.0,
         "lesson_elapsed_minutes": 0.0,
-        "idle_gap_minutes": 8.0,
-        "idle_credit_ratio": 0.25,
-        "absence_grace_minutes": 15.0,
-        "absent_policy": "extend",
         "stage_budget_minutes": 22.0,
         "advance_when": "either",
         "on_evidence_reached": "advance",
@@ -130,25 +82,22 @@ def base_state(**over) -> dict:
     return s
 
 
-def replay(start: dict, stamps: list, last_hm: str):
-    """依次喂入时间戳，返回最终状态。模拟多轮对话累计。
+def at(hm: str) -> str:
+    return f"2026-09-18T{hm}:00+08:00"
 
-    stamps: ["10:01", "10:02", ...]，最后一轮用 last_hm。
-    """
+
+def replay(start: dict, stamps: list) -> dict:
+    """依次喂入时间戳，模拟多轮对话。返回最终状态。"""
     st = dict(start)
-    for hm in stamps[:-1] + [last_hm]:
-        st["now"] = f"2026-09-18T{hm}:00+08:00"
-        t = tick(st)
-        st.update(t)
-        st["turn_evidence"] = []
-        st["unresolved"] = ["KP-002"]
+    for hm in stamps:
+        st["now"] = at(hm)
+        st.update(tick(st))
     return st
 
 
 def check(name, verdict, expect, extra=""):
     ok = verdict["action"] == expect
-    flag = "PASS" if ok else "FAIL"
-    print(f"[{flag}] {name}")
+    print(f"[{'PASS' if ok else 'FAIL'}] {name}")
     if extra:
         print(f"       {extra}")
     print(f"       判定 {verdict['action']} ← {verdict['reason']}")
@@ -158,108 +107,72 @@ def check(name, verdict, expect, extra=""):
 def main():
     results = []
 
-    # ── 1. 单轮间隔的三种归类（挂机治理）──
-    print("── 单轮间隔归类 ──")
-    for name, hm, exp_frac, exp_action in [
-        ("正常对话 1 分钟", "10:01", 1.0, "stay"),
-        ("间隔 10 分钟（疑似走开）→ 只计 25%", "10:10", 0.25, "stay"),
-        ("间隔 20 分钟（超宽限）→ 计 0", "10:20", 0.0, "stay"),
-    ]:
-        st = base_state(now=f"2026-09-18T{hm}:00+08:00")
-        t = tick(st)
-        merged = {**st, **t}
-        v = judge_advance(merged)
-        ok = t["idle_fraction"] == exp_frac and v["action"] == exp_action
-        results.append(ok)
-        print(f"[{'PASS' if ok else 'FAIL'}] {name}")
-        print(f"       计比例 {t['idle_fraction']} | 净时长 {t['stage_teach_minutes']} 分 "
-              f"| 墙钟 {t['stage_elapsed_minutes']} 分")
-        print(f"       判定 {v['action']} ← {v['reason']}")
-
-    # ── 2. 关键回归：连续多轮后净时长到预算，必须能切幕 ──
-    # 这条盯住"一旦幕超宽限就永久冻结预算"的漏洞。
-    # 用 10 轮正常对话把净时长累积过 22 分，中途夹一轮 12 分钟的停顿。
-    print("\n── 回归：多轮累计到预算应能切幕 ──")
+    # ── 1. 时长计算单调 ──
+    print("── 真实时钟：时长随墙钟增长 ──")
     st = base_state()
-    st = replay(
-        st,
-        ["10:04", "10:08", "10:12", "10:16", "10:20", "10:24",
-         "10:36", "10:40", "10:44", "10:48"],
-        "10:52",
-    )
-    results.append(check(
-        "多轮累计越过预算（含一次 12 分停顿）→ 应切幕",
-        judge_advance(st), "next_stage",
-        f"净时长 {st['stage_teach_minutes']} 分（预算 {st['stage_budget_minutes']}）"
-        f" | 墙钟 {st['stage_elapsed_minutes']} 分 | "
-        f"absence_kind={st.get('absence_kind')}",
-    ))
+    st = replay(st, ["10:01", "10:05", "10:13"])
+    ok = st["stage_elapsed_minutes"] == 13.0 and st["lesson_elapsed_minutes"] == 13.0
+    results.append(ok)
+    print(f"[{'PASS' if ok else 'FAIL'}] 三轮后本幕/本课均已花 13 分钟")
+    print(f"       stage={st['stage_elapsed_minutes']} lesson={st['lesson_elapsed_minutes']}")
 
-    # ── 3. 整幕真的没人：宽限内不算缺席，超了才冻结 ──
-    print("\n── 整幕缺席判定 ──")
-    st = base_state(stage_started_at="2026-09-18T10:00:00+08:00")
-    st2 = replay(st, ["10:05", "10:10"], "10:12")   # 幕内只过了 12 分，未超宽限
-    results.append(check(
-        "幕内 12 分钟（未超宽限）→ 不判缺席",
-        judge_advance(st2), "stay",
-        f"absence_kind={st2.get('absence_kind')} | 墙钟 {st2['stage_elapsed_minutes']} 分",
-    ))
-    st3 = base_state()
-    st3 = replay(st3, ["10:01"], "10:25")           # 幕内 25 分且单轮 24 分
-    results.append(check(
-        "幕内 25 分钟 + 单轮 24 分（双超宽限）→ 判缺席冻结",
-        judge_advance(st3), "stay",
-        f"absence_kind={st3.get('absence_kind')} | 墙钟 {st3['stage_elapsed_minutes']} 分",
-    ))
+    # ── 2. 最短幕时长保护 ──
+    print("\n── 最短幕时长保护 ──")
+    st = base_state()
+    st = replay(st, ["10:01"])
+    results.append(check("1 分钟（< min 2 分）→ 留幕", judge_advance(st), "stay",
+                         f"已花 {st['stage_elapsed_minutes']} 分"))
+    st = base_state()
+    st = replay(st, ["10:02"])
+    results.append(check("2 分钟（= min 2 分）→ 进入后续判定", judge_advance(st), "stay",
+                         f"已花 {st['stage_elapsed_minutes']} 分"))
 
-    # ── 4. 缺席策略分支 ──
-    print("\n── absent_policy 分支 ──")
-    for policy, exp in [("skip", "next_stage"), ("end", "next_stage"), ("extend", "stay")]:
-        st = base_state()
-        st = replay(st, ["10:01"], "10:25")
-        st["absent_policy"] = policy
-        results.append(check(
-            f"缺席 + absent_policy={policy}",
-            judge_advance(st), exp,
-        ))
+    # ── 3. 预算触发切幕 ──
+    print("\n── 预算触发 ──")
+    st = base_state()
+    st = replay(st, ["10:21", "10:22"])
+    results.append(check("已花 22 分（= 预算 22）→ 切幕", judge_advance(st), "next_stage",
+                         f"已花 {st['stage_elapsed_minutes']} 分"))
 
-    # ── 5. 证据优先于时间 ──
+    # ── 4. 证据优先于时间 ──
     print("\n── 证据与预算的优先级 ──")
-    st = base_state(
-        stage_started_at="2026-09-18T10:00:00+08:00",
-        stage_teach_minutes=3.0,
-        stage_elapsed_minutes=3.0,
-        turn_evidence=["学生说出高级调度把作业调入内存"],
-        unresolved=[],
-    )
-    results.append(check(
-        "3 分钟但目标全关闭 → 切幕（证据优先）",
-        judge_advance(st), "next_stage",
-    ))
+    st = base_state()
+    st = replay(st, ["10:03"])
+    st["turn_evidence"] = ["学生说出高级调度把作业调入内存"]
+    st["unresolved"] = []
+    results.append(check("3 分钟但目标全关闭 → 切幕（证据优先）",
+                         judge_advance(st), "next_stage"))
 
-    st = base_state(
-        stage_started_at="2026-09-18T10:00:00+08:00",
-        stage_teach_minutes=30.0,
-        stage_elapsed_minutes=30.0,
-        advance_when="evidence",
-        on_budget_exhausted="force_advance",
-    )
-    results.append(check(
-        "evidence 模式 + 目标未关闭 + 超预算 → 留幕（目标优先）",
-        judge_advance(st), "stay",
-    ))
+    st = base_state(advance_when="evidence", on_budget_exhausted="force_advance")
+    st = replay(st, ["10:30"])
+    st["turn_evidence"] = []
+    st["unresolved"] = ["KP-002"]
+    results.append(check("evidence 模式 + 目标未关闭 + 超预算 → 留幕（目标优先）",
+                         judge_advance(st), "stay"))
+
+    # ── 5. 三种预算策略 ──
+    print("\n── on_budget_exhausted 三分支 ──")
+    for mode, exp in [("force_advance", "next_stage"), ("wrap_up", "next_stage")]:
+        st = base_state(on_budget_exhausted=mode)
+        st = replay(st, ["10:25"])
+        st["unresolved"] = ["KP-002"]
+        results.append(check(f"超预算 + {mode}", judge_advance(st), exp))
+    st = base_state(on_budget_exhausted="extend")
+    st = replay(st, ["10:23"])
+    results.append(check("超预算 1 分 + extend（额度 3 分）→ 留幕", judge_advance(st), "stay"))
+    st = base_state(on_budget_exhausted="extend")
+    st = replay(st, ["10:22", "10:30"])
+    results.append(check("超预算 8 分 + extend（额度 3 分）→ 切幕", judge_advance(st), "next_stage"))
 
     # ── 6. 可回放性 ──
-    print("\n── 回放验证：学生中途离开 18 分钟 ──")
+    print("\n── 回放验证：整节课按时间戳重演 ──")
     st = base_state()
-    st = replay(st, ["10:01", "10:02", "10:03", "10:21", "10:22", "10:23",
-                     "10:24", "10:30"], "10:53")
-    idle = st["lesson_elapsed_minutes"] - st["lesson_teach_minutes"]
-    print(f"       墙钟 {st['lesson_elapsed_minutes']} 分 | "
-          f"净时长 {st['lesson_teach_minutes']} 分 | 发呆 {idle:.1f} 分")
-    ok = st["lesson_teach_minutes"] < st["lesson_elapsed_minutes"] and idle > 15
-    results.append(ok)
-    print(f"[{'PASS' if ok else 'FAIL'}] 净时长显著低于墙钟（挂机被正确扣除）")
+    st = replay(st, ["10:01", "10:05", "10:10", "10:14", "10:18", "10:22"])
+    print(f"       本幕已花 {st['stage_elapsed_minutes']} 分 | "
+          f"本课已花 {st['lesson_elapsed_minutes']} 分")
+    results.append(st["lesson_elapsed_minutes"] == 22.0)
+    print(f"[{'PASS' if st['lesson_elapsed_minutes'] == 22.0 else 'FAIL'}] "
+          f"回放结果与墙钟一致（可单测）")
 
     passed = sum(1 for r in results if r)
     print(f"\n结果: {passed}/{len(results)} 通过")

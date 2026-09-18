@@ -108,7 +108,6 @@
 | 编排器字段 | `DIALOGUE-LOG-FORMAT.md` |
 | 阶段快照机制 | `MASTERY-STAR-RULES.md` |
 | 课程计划配置 | `lesson-data/lesson-plan.json` |
-| 时钟策略 `clock_policy` | `lesson-data/lesson-plan.json` |
 | LangGraph 编排规范 | `orchestrator/ORCHESTRATOR.md` |
 | 时钟与切幕参考实现 + 回归测试 | `orchestrator/clock_reference.py` |
 | KP 4 个探究字段 | `rules/KNOWLEDGE-BASE.md` |

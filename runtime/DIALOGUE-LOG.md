@@ -10,16 +10,10 @@
 - active_segment_id: 无
 - now: 无
 - lesson_started_at: 无
-- last_activity_at: 无
 - stage_started_at: 无
-- stage_teach_minutes: 0
 - stage_elapsed_minutes: 0
-- lesson_teach_minutes: 0
 - lesson_elapsed_minutes: 0
 - stage_budget_minutes: 0
-- idle_elapsed_minutes: 0
-- idle_fraction: 0
-- absence_kind: normal
 - remaining_stages: 无
 - advance_reason: 无
 
