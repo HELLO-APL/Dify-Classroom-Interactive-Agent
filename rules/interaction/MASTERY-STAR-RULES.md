@@ -2,7 +2,7 @@
 
 本文件定义知识点掌握度的 0-5 星标准。**这是唯一权威规则，任何页面不得另算一套。**
 
-知识点来自 `rules/KNOWLEDGE-BASE.md`。当前掌握状态写入 `apps/student-workspace/data/mastery-state.json`，每次变化追加到 `mastery-history.json`。
+知识点来自 `rules/KNOWLEDGE-BASE.md`。当前掌握状态写入 `runtime/data/mastery-state.json`，每次变化追加到 `mastery-history.json`。
 
 > **2026-09 重构说明**：本版本**已移除"标注"环节**。掌握度不再由学生标记产生，而是由学生在**复述、深层探究、全班讨论**三个阶段中的实际表现，**阶段性记录**。
 

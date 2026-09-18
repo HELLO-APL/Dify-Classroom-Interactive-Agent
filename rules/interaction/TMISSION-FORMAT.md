@@ -1,8 +1,12 @@
 # TMISSION Format
 
-`TMISSION.md` stores the teacher/class mission for the current lesson. One mission per lesson, shared by the whole class.
+`TMISSION.md` 存放本节课的**老师/班级任务**。一节课一份，全班共用。
+
+路径：`runtime/TMISSION.md`
 
 > **2026-09 重构**：`核心难点` 新增 `检验问题` 字段 —— 这是复述/探究阶段提问的直接来源。
+
+---
 
 ## Template
 
@@ -10,41 +14,46 @@
 # TMISSION: {lesson or topic}
 
 ## 老师为什么设置这节课
-{the real classroom outcome the teacher wants}
+{老师真正想要的课堂结果}
 
 ## 全班共同目标
-- {observable outcome}
+- {可观察的结果}
 
 ## 核心难点
-- {KP-xxx} {difficulty}
-  - 检验问题: {the question that tests whether the student got this}
-  - 答对证据: {what a correct student answer looks like}
-  - 易错表现: {what a wrong or shallow answer sounds like}
+- {KP-xxx} {难点}
+  - 检验问题: {用来检验学生是否掌握这个问题}
+  - 答对证据: {学生答对时是什么样}
+  - 易错表现: {答错或答得浅时是什么样}
 
 ## 易混淆点
 - {KP-xxx} {A} vs {B}
 
 ## 老师需要学生主动说出或做出
-- {student-owned output}
+- {由学生自己产出的东西}
 
 ## 不允许由 AI 代答
-- {teacher wants the student to produce for themselves}
+- {老师希望学生自己完成的部分}
 ```
+
+---
 
 ## Rules
 
-- Write outcomes the teacher can observe, not teaching intentions.
+- 写**老师能观察到的结果**，不写教学意图。
 - **每个难点必须写 `检验问题`** —— 没有检验问题，复述阶段就没有可问的题。
-- Every difficulty entry must carry both evidence and error shape so the dialogue skill can recognize progress.
-- Tie each difficulty and confusion pair to a stable `KP-xxx` in `KNOWLEDGE-BASE.md` when the directory exists.
-- Keep the file short enough to fit one lesson. Long curriculum plans belong elsewhere.
+- 每个难点都必须同时带「答对证据」和「易错表现」，这样对话能力识别学生是否在进步。
+- 难点与易混淆点都尽量挂到 `KNOWLEDGE-BASE.md` 的稳定 `KP-xxx`。
+- 保持在一节课的篇幅内。长期课程规划属于别处。
+- **易混淆点只列名称**（A vs B），不在此写如何提问。
 
-## 职责分工（避免与 LESSON-INTERACTION 打架）
+---
 
-| 内容 | 写在哪个文件 |
-| --- | --- |
-| 易混淆点（**只在这里列**） | `TMISSION.md` |
-| 易混淆点的**区分问题** | `LESSON-INTERACTION.md` |
-| 核心难点 + 检验问题 + 答对证据 + 易错表现 | `TMISSION.md` |
+## 与 LESSON-CONTENT 的分工
 
-> 同一组"易混淆点 A vs B"不要在两个文件里都写，只在 TMISSION 列出，在 LESSON-INTERACTION 里给区分问题。
+| 文件 | 回答什么问题 | 装什么 |
+| --- | --- | --- |
+| `TMISSION.md` | 老师**想让学生达到什么** | 老师目标、核心难点、易混淆点列表 |
+| `LESSON-CONTENT.md` | 这课**实际教什么** | 先修知识、新内容、任务、成功证据、材料来源 |
+
+> 两个文件都**不含交互逻辑**。AI 怎么提问、怎么追问，在 `stages/<阶段>/prompt.md`。
+> 「区分问题」这一概念已废弃，不再使用。

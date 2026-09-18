@@ -77,13 +77,13 @@ class ClassroomState(TypedDict):
     advance_reason: str | None     # 为什么切幕（写进日志）
 ```
 
-> **写回磁盘的映射**：`host_phase` / `stage_elapsed_minutes` / `current_target` 等 → `runtime/DIALOGUE-LOG.md`；`mastery_updates` → `apps/student-workspace/data/mastery-state.json` + `mastery-history.json`；`stage_snapshots` → `mastery-history.json`（带 `stage` 字段）。
+> **写回磁盘的映射**：`host_phase` / `stage_elapsed_minutes` / `current_target` 等 → `runtime/DIALOGUE-LOG.md`；`mastery_updates` → `runtime/data/mastery-state.json` + `mastery-history.json`；`stage_snapshots` → `mastery-history.json`（带 `stage` 字段）。
 
 ---
 
 ## 3. 节点（Nodes）
 
-每个节点 = 一次职责单一的动作。节点名与旧 n8n 工作流对应关系一并列出，便于迁移。
+每个节点 = 一次职责单一的动作。这 9 个节点就是要实现的目标结构。
 
 | # | 节点名 | 职责 | 读什么 | 写什么 |
 | --- | --- | --- | --- | --- |
@@ -94,7 +94,7 @@ class ClassroomState(TypedDict):
 | 5 | `teach` | 执行本幕教学（大模型节点） | 组装好的上下文 + `stages/<id>/prompt.md` | state: `reply_text` / `turn_evidence` / `current_question` |
 | 6 | `judge_mastery` | 按 rubric 判星级 | `stages/<id>/rubric.md` + `rules/interaction/MASTERY-STAR-RULES.md` | state: `mastery_updates` |
 | 7 | `judge_advance` | **判定是否切幕**（编排核心） | 见第 5 节 | state: 目标 `host_phase` / `advance_reason` |
-| 8 | `write_state` | 落盘所有状态 | state | `runtime/**` / `apps/**/data/**` |
+| 8 | `write_state` | 落盘所有状态 | state | `runtime/**` / `runtime/data/**` |
 | 9 | `format_reply` | 组装回复与播报标记 | state | state: `reply_text` / `speech_kind` |
 
 ---
@@ -109,7 +109,7 @@ class ClassroomState(TypedDict):
 | **计划层** | `lesson-data/lesson-plan.json`（仅当前阶段的配置） | 每轮 |
 | **课堂层** | `runtime/DIALOGUE-LOG.md` + 当前 `segments/seg-XXX.json` + 该段绑定的 KP 全文 | 每轮 |
 | **阶段层** | `stages/<当前阶段>/questions.md` + `prompt.md` + `rubric.md` | 仅当前阶段 |
-| **历史层** | `apps/student-workspace/data/dialogue-log.json` 的相关片段 | 按需召回 |
+| **历史层** | `runtime/data/dialogue-log.json` 的相关片段 | 按需召回 |
 | **档案层** | `mastery-state.json` / `mastery-history.json` | 仅判星级时 |
 
 **按阶段加载的阶段层文件（重要）：**
@@ -247,22 +247,22 @@ load_plan ──► load_context ──► classify_turn
 
 ---
 
-## 9. 与旧 n8n 工作流的对应关系（迁移参考）
+## 9. 节点职责总表
 
-| 旧 n8n 节点 | 新节点 | 变化 |
+> 本仓库**不含 n8n，也不含前端**。以下 9 个节点是要实现的目标结构，与旧实现的对照见 `MIGRATION.md`。
+
+| 节点 | 必须实现 | 说明 |
 | --- | --- | --- |
-| Chat Trigger | （外部入口） | 不变 |
-| Normalize Input | `load_context` 的一部分 | 合并 |
-| Read Rule Files | `load_context` | 合并，路径改 `rules/` |
-| Read State Files | `load_context` | 合并，路径改 `runtime/` |
-| Read Class Point Files | **删除** | 标注功能移除 |
-| Combine Context | `load_context` | 改为按阶段分层 |
-| Teach Session Agent | `teach` | 提示词按阶段拆分 |
-| Parse Agent JSON | （LangGraph 结构化输出） | 由 schema 保证 |
-| Prepare State Writes | `write_state` | 合并 |
-| State Markdown to Binary | **删除** | LangGraph 直接写文件 |
-| Write State Files | `write_state` | 保留，路径改 |
-| Format Chat Reply | `format_reply` | 保留 |
-| — | **`load_plan`** | 新增：读课程计划 |
-| — | **`judge_advance`** | 新增：编排核心 |
-| — | **`advance_stage`** | 新增：切幕 |
+| `load_plan` | 是 | 读 `lesson-data/lesson-plan.json` 并校验 |
+| `load_context` | 是 | 按 `host_phase` 分层装配上下文 |
+| `classify_turn` | 是 | 判断本轮输入类型 |
+| `host_event` | 是 | 处理开场/收尾等主持事件 |
+| `teach` | 是 | 执行当前阶段的教学（模型调用） |
+| `judge_mastery` | 是 | 按 rubric 判星级 |
+| `judge_advance` | 是 | **编排核心**，决定是否切幕 |
+| `advance_stage` | 是 | 写阶段快照 + 切到下一幕 |
+| `write_state` | 是 | 落盘 `runtime/**` 与 `runtime/data/**` |
+| `format_reply` | 是 | 组装回复文本与播报标记 |
+
+**没有的东西（不要实现）**：任何标注相关节点、任何 n8n 节点、任何前端页面。
+

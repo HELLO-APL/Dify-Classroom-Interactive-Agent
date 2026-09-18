@@ -21,8 +21,8 @@ Read before the first turn:
 - `runtime/**`: current session control and lesson state.
 - `lesson-data/segments/`: 课程片段，每段绑定知识点。
 - `stages/<current_stage>/`: 当前阶段的 questions / rubric / prompt（可为空壳）。
-- `apps/student-workspace/data/mastery-state.json` / `mastery-history.json`: current and past mastery.
-- `apps/student-workspace/data/dialogue-log.json`: full student/AI messages.
+- `runtime/data/mastery-state.json` / `mastery-history.json`: current and past mastery.
+- `runtime/data/dialogue-log.json`: full student/AI messages.
 
 If teacher goals or lesson state are missing, name them and wait. If `KNOWLEDGE-BASE.md` or the workspace data layer is missing, keep teaching but do not invent knowledge point IDs or mastery history.
 
@@ -115,7 +115,7 @@ If teacher goals or lesson state are missing, name them and wait. If `KNOWLEDGE-
 Write by event, never by habit:
 
 - **Every turn**: update session control in `runtime/DIALOGUE-LOG.md`（`current_target` / `current_question` / `attempts` / `mastered` / `unresolved`）。
-- **Every student/AI exchange**: append to `apps/student-workspace/data/dialogue-log.json`.
+- **Every student/AI exchange**: append to `runtime/data/dialogue-log.json`.
 - **Mastery evidence**: update `mastery-state.json` and append to `mastery-history.json` using `old_stars/new_stars`, `source`, `stage`, and evidence. Only a passed assessment may create 5 stars.
 - **Stage end**: append a **stage snapshot** to `mastery-history.json`（见 `MASTERY-STAR-RULES.md`）.
 - **End of class only**: update `SMISSION.md`, `NOTES.md`, `GLOSSARY.md`, `LEARNING-RECORD.md`, and set `phase` to `ended`.

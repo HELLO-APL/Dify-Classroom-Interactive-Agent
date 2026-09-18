@@ -2,7 +2,7 @@
 
 `DIALOGUE-LOG.md` 是**当前会话的控制块**，也是编排器读写的核心状态文件。
 
-原始学生/AI 消息存在 `apps/student-workspace/data/dialogue-log.json`；掌握度存在 `mastery-state.json` / `mastery-history.json`。
+原始学生/AI 消息存在 `runtime/data/dialogue-log.json`；掌握度存在 `mastery-state.json` / `mastery-history.json`。
 
 > **2026-09 重构说明**：`host_phase` 枚举已更新（移除 `point_review`、新增三个阶段），并新增**编排器字段**（阶段预算、耗时、切幕原因）。
 

@@ -17,5 +17,5 @@
 - Record teaching preferences and working observations that should steer the next sessions.
 - Read `NOTES.md` before a session so earlier preferences are honored.
 - Move durable understanding out of `NOTES.md` into `LEARNING-RECORD.md`.
-- Keep dialogue evidence and transcripts in `apps/student-workspace/data/dialogue-log.json`.
+- Keep dialogue evidence and transcripts in `runtime/data/dialogue-log.json`.
 - 本文件在**课程结束时**更新（由 `class-interaction` 在 `ending` 阶段写）。

@@ -1,6 +1,6 @@
 # 从旧仓库迁移的映射与变更记录
 
-> 迁移日期：2026-09-17
+> 迁移日期：2026-09-17（2026-09-18 修订：移除 n8n 与前端，废弃区分问题，`LESSON-INTERACTION` 改名）
 > 源仓库：`D:\project\Dify 课堂互动智能体`（**保持不动，仅作参照**）
 > 目标仓库：`D:\project\主动引导智能体`（本仓库）
 > 上游：`HELLO-APL/Dify-Classroom-Interactive-Agent`
@@ -18,12 +18,14 @@
 | `class-point/segments/` | `lesson-data/segments/` | 原样迁移 |
 | `class-point/points/` | — | **不迁移**（标注功能移除） |
 | `teach test/` | `runtime/` | 改名 + 重置为空白模板 |
-| `classroom-chat/` | `apps/classroom-chat/` | 移入 apps/ |
-| `student-workspace/` | `apps/student-workspace/` | 移入 apps/ + data 重置 |
-| `workflow/` | `workflow/` | 待改造 |
-| `docs/` | `docs/` | 待更新 |
+| `teach test/LESSON-INTERACTION.md` | `runtime/LESSON-CONTENT.md` | **改名**（旧名太宽泛）+ 移除易混淆点段 |
+| `classroom-chat/` | — | **不迁移**（不做前端） |
+| `student-workspace/` | — | **不迁移**（不做前端） |
+| `workflow/` | — | **不迁移**（不要 n8n） |
+| `docs/` | — | **不迁移**（待重写） |
 | `archive/` | — | **不迁移**（旧实验，留在旧仓库） |
-| `start-classroom-chat.cmd` | `start-classroom-chat.cmd` | 待改路径 |
+| `start-classroom-chat.cmd` | — | **不迁移**（启动前端用，已无前端） |
+| — | `runtime/data/` | **新建**：掌握度与对话流水（原属 student-workspace） |
 | — | `lesson-data/lesson-plan.json` | **全新**（编排入口） |
 | — | `stages/` | **全新**（三阶段内容层） |
 | — | `orchestrator/ORCHESTRATOR.md` | **全新**（LangGraph 编排规范） |
@@ -32,21 +34,21 @@
 
 ## 二、内容迁移明细
 
-### 原样迁移（内容不变）
+### 原样迁移（内容保留）
 
 | 文件 | 说明 |
 | --- | --- |
 | `lesson-data/segments/seg-001~006.json` | 课程片段，属课程内容而非用户记录 |
 | `rules/KNOWLEDGE-BASE.md` | 知识点正文保留，仅追加 4 个空探究字段 |
 | `runtime/TMISSION.md` | 老师写的第3章目标与难点，**内容完整保留** |
-| `runtime/LESSON-INTERACTION.md` | 本课内容与区分问题，**内容完整保留** |
+| `runtime/LESSON-CONTENT.md` | 本课先修/新内容/任务/成功证据/材料来源，**保留**；**已删除「易混淆点」段** |
 
-> `TMISSION.md` 与 `LESSON-INTERACTION.md` 是**老师课程内容**，不是用户运行时记录，所以迁移。
-> 它们缺少新增的 `检验问题` 字段，待老师补充。
+> `TMISSION.md` 与 `LESSON-CONTENT.md` 是**老师课程内容**，不是用户运行时记录，所以迁移。
+> `TMISSION.md` 还缺新增的 `检验问题` 字段，待老师补充。
 
 ### 重置为空白模板（旧数据丢弃）
 
-按用户确认"用户运行时记录可直接删除"：
+按"用户运行时记录可直接删除"：
 
 | 文件 | 旧内容 | 新状态 |
 | --- | --- | --- |
@@ -55,7 +57,7 @@
 | `runtime/NOTES.md` | 旧工作观察 | 空白模板 |
 | `runtime/GLOSSARY.md` | 旧词汇 | 空白模板 |
 | `runtime/LEARNING-RECORD.md` | 旧记录 | 空白模板 |
-| `apps/student-workspace/data/*.json` | 旧掌握/对话数据 | 空白模板 |
+| `runtime/data/*.json` | 旧掌握/对话数据 | 空白模板 |
 | `class-point/points/*.json` | 标记点 | **不迁移** |
 
 ---
@@ -75,11 +77,33 @@
 | `annotation_ids` / `last_annotation_id` 字段 | 同上 |
 | 前置读取 `class-point/points` | `class-interaction/SKILL.md` |
 
-### 新增：探索/复述/讨论三阶段
+### 移除：区分问题
+
+| 移除项 | 说明 |
+| --- | --- |
+| 「区分问题」概念 | **整体废弃**，不再作为设计要素 |
+| `LESSON-INTERACTION.md` 的易混淆点段 | 整段删除（含 10 组 A vs B 与对应区分问题） |
+| FORMAT 中的区分问题要求 | `LESSON-INTERACTION-FORMAT.md` 改为 `LESSON-CONTENT-FORMAT.md`，规则改为"不写易混淆点" |
+
+> 易混淆点**只在 `TMISSION.md` 列名称**（A vs B），不写如何提问。
+
+### 移除：n8n 与前端
+
+| 移除项 | 说明 |
+| --- | --- |
+| `workflow/` 目录及全部 n8n 构建脚本 | 本仓库不再包含 |
+| `classroom-chat/`（课堂聊天页面） | 不做前端 |
+| `student-workspace/`（学生页面） | 不做前端 |
+| `start-classroom-chat.cmd` | 启动前端用，已无前端 |
+| ORCHESTRATOR 的 n8n 节点对照表 | 改为"节点职责总表" |
+
+> 前端相关的数据文件（mastery/dialogue）迁到 `runtime/data/`，因为规则仍需要读写它们。
+
+### 新增：三阶段内容层
 
 | 新增 | 位置 |
 | --- | --- |
-| 阶段内容层（问题/标准/提示词） | `stages/` 三个目录 |
+| 阶段内容层（问题/标准/提示词） | `stages/{recap_discussion,deep_inquiry,class_discussion}/` |
 | 四阶段 `host_phase` 枚举 | `DIALOGUE-LOG-FORMAT.md` |
 | 编排器字段 | `DIALOGUE-LOG-FORMAT.md` |
 | 阶段快照机制 | `MASTERY-STAR-RULES.md` |
@@ -93,41 +117,19 @@
 | 旧 | 新 | 原因 |
 | --- | --- | --- |
 | 1 星"已标注" | **1 星"已接触"** | 标注移除后星级需保持连续 |
+| `LESSON-INTERACTION.md` | **`LESSON-CONTENT.md`** | 旧名太宽泛，且文件不含交互内容 |
 | `lecturing` / `segment_summary` | `guided_learning` / `recap_discussion` | 四阶段模型 |
 | `class agent` | `rules` | 去空格 |
 | `class-point` | `lesson-data` | 去空格 + 语义更准 |
 | `teach test` | `runtime` | 去空格 + 语义更准 |
+| `student-workspace/data/` | `runtime/data/` | 无前端后归入运行时 |
 
 ---
 
-## 四、旧 n8n 节点对应
+## 四、待办
 
-| 旧节点 | 新归属 | 变化 |
-| --- | --- | --- |
-| Chat Trigger | 外部入口 | 不变 |
-| Normalize Input | `load_context` | 合并 |
-| Read Rule Files | `load_context` | 路径改 `rules/` |
-| Read State Files | `load_context` | 路径改 `runtime/` |
-| **Read Class Point Files** | — | **删除** |
-| Combine Context | `load_context` | 改按阶段分层 |
-| Teach Session Agent | `teach` | 提示词按阶段拆分 |
-| Prepare State Writes | `write_state` | 合并 |
-| **State Markdown to Binary** | — | **删除** |
-| Write State Files | `write_state` | 路径改 |
-| Format Chat Reply | `format_reply` | 保留 |
-| — | **`load_plan`** | 新增 |
-| — | **`judge_advance`** | 新增（编排核心） |
-| — | **`advance_stage`** | 新增 |
-
----
-
-## 五、待办
-
-- [ ] `workflow/` 下 n8n 工作流按新节点结构改造
-- [ ] `apps/classroom-chat/server.mjs` 删除 points 接口 + 改路径
-- [ ] `apps/classroom-chat/public/*` 与 `student-workspace/public/*` 前端删标注入口
-- [ ] `start-classroom-chat.cmd` 改路径
-- [ ] `docs/` 五份文档更新（删 class_point 表，写新编排器）
-- [ ] `runtime/TMISSION.md` 补 `检验问题` 字段
-- [ ] `runtime/LESSON-INTERACTION.md` 去重易混淆点列表
+- [ ] `runtime/TMISSION.md` 补 `检验问题` 字段（每个核心难点）
 - [ ] `rules/KNOWLEDGE-BASE.md` 填 4 个探究字段
+- [ ] 按 `ORCHESTRATOR.md` 实现 9 个节点（LangGraph）
+- [ ] `stages/*/questions.md` 与 `rubric.md` 按需填写
+- [ ] 补充"无定时器时如何自动切幕"的方案
