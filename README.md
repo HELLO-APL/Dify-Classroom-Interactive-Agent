@@ -38,7 +38,7 @@
 │   └── dialogue/SKILL.md        # 对话 Skill（学生轮次路由）
 │
 ├── lesson-data/                 # 课程数据层（老师配置）
-│   ├── lesson-plan.json         #   ★ 编排入口：阶段开关 + 时长预算 + 推进策略
+│   ├── lesson-plan.json         #   ★ 编排入口：阶段开关 + 时长预算 + 推进策略 + 时钟策略
 │   └── segments/seg-XXX.json    #   课程片段（order 定顺序，绑定 KP）
 │
 ├── stages/                      # 阶段内容层（可空壳，留空不影响运行）
@@ -61,6 +61,7 @@
 │
 └── orchestrator/                # 编排器结构规范
     ├── ORCHESTRATOR.md          #   ★ LangGraph 状态图、节点、条件边、调度约定
+    ├── clock_reference.py       #   真实时钟与切幕判定的可运行参考实现 + 回归测试
     └── MIGRATION.md             #   从旧仓库迁移的映射与变更记录
 ```
 
@@ -105,6 +106,29 @@
 | `enabled` | `false` → **整段跳过**（比如这门课不要讨论） |
 | `minutes` | 这一幕的**时长预算** |
 | `advance_when` | `either`（证据达标或时间到）/ `evidence`（学透才走）/ `budget`（只看时间） |
+
+### 1.1 时间怎么算（真实时钟）
+
+编排器**用真实时间**推进，不看"聊了几轮"。每轮由会话层把当前时间戳（`now`）注入状态，编排器只做算术——这样切幕逻辑可单测、可回放。
+
+关键点在**挂机治理**：间隔 10 分钟和认真想 10 分钟，对"上完这门课"的贡献不同。
+
+```json
+"clock_policy": {
+  "idle_gap_minutes": 8,          // 单轮间隔超过此值 → 只按 25% 记课时
+  "idle_credit_ratio": 0.25,      // 上一条的折扣比例
+  "absence_grace_minutes": 15,    // 单轮间隔超过此值 → 判为"人不在"，记 0
+  "absent_policy": "extend"       // 人不在时：extend 冻结 / skip 跳过 / end 结束
+}
+```
+
+| 概念 | 说明 |
+| --- | --- |
+| **净时长** `*_teach_minutes` | 扣除挂机后的有效课时，**切幕只看这个** |
+| **墙钟时长** `*_elapsed_minutes` | 真实流逝时间，给老师复盘用 |
+
+> 两个口径都记录，老师才看得出"这 45 分钟里有多少是在发呆"。
+> 判定"人不在"只看**上一轮距今多久**，不看这一幕开了多久——否则幕一旦超过宽限就会永久冻结预算，课下不来。参考实现与 12 条回归测试见 `orchestrator/clock_reference.py`。
 
 ### 2. 填课程内容
 

@@ -21,7 +21,9 @@ lesson-plan.json   ──→   runtime/DIALOGUE-LOG.md  ──→  每轮读 →
 | **演哪一幕** | `host_phase` | AI 每轮写回 |
 | **这门课有哪些幕** | `lesson-plan.json` 的 `stages[]` | 老师 |
 | **每幕演多久** | `lesson-plan.json` 的 `minutes` | 老师 |
-| **当前幕演了多久** | `runtime/DIALOGUE-LOG.md` 的 `stage_elapsed_minutes` | AI 每轮更新 |
+| **当前幕演了多久** | `runtime/DIALOGUE-LOG.md` 的 `stage_teach_minutes`（净）/ `stage_elapsed_minutes`（墙钟） | AI 每轮更新 |
+| **现在几点** | state 的 `now` | **会话层注入**（编排器不自己取时间） |
+| **挂机怎么算** | `lesson-plan.json` 的 `clock_policy` | 老师 |
 | **幕怎么演** | `stages/<stage_id>/prompt.md` | 设计者（可空壳） |
 | **幕里问什么** | `stages/<stage_id>/questions.md` | 老师（可空壳） |
 | **幕的及格线** | `stages/<stage_id>/rubric.md` | 老师（可空壳） |
@@ -49,10 +51,25 @@ class ClassroomState(TypedDict):
     ]
     active_segment_id: str | None
     stage_started_at: str          # ISO8601，本幕开始时刻
-    stage_elapsed_minutes: float   # 本幕已耗时
-    lesson_elapsed_minutes: float  # 本课已耗时
+    stage_teach_minutes: float     # 本幕"讲授净时长"（累计，不含挂机）
+    lesson_teach_minutes: float    # 本课"讲授净时长"（累计）
+    stage_elapsed_minutes: float   # 本幕墙钟时长（= now - stage_started_at）
+    lesson_elapsed_minutes: float  # 本课墙钟时长（= now - lesson_started_at）
     stage_budget_minutes: float    # 本幕预算（来自 lesson-plan）
     remaining_stages: list[str]    # 尚未演出的幕（已按计划过滤 enabled）
+
+    # ── 时钟（方案 B：真实时钟，外部注入）──
+    now: str                       # ISO8601，本轮时间戳。由会话侧注入，节点只读
+    lesson_started_at: str | None  # ISO8601，本课开始时刻
+    last_activity_at: str | None   # ISO8601，上一轮"有效活动"时刻
+    idle_elapsed_minutes: float    # 距上一轮的间隔，用于算本轮有效时长
+    idle_fraction: float           # 本轮间隔中"算作课时"的比例 [0,1]
+
+    # ── 时钟策略（来自 lesson-plan.json 的 clock_policy）──
+    idle_gap_minutes: float        # 间隔超过此值即判为挂机，默认 8
+    idle_credit_ratio: float       # 单人挂机时仍算课时的比例，默认 0.25
+    absent_policy: Literal["extend", "skip", "end"]  # 整幕挂机怎么办
+    absence_grace_minutes: float   # 多久没动静才算"人不在"，默认 15
 
     # ── 教学状态 ──
     current_target: str | None     # 当前教学目标（难点/易混淆点/KP）
@@ -79,23 +96,28 @@ class ClassroomState(TypedDict):
 
 > **写回磁盘的映射**：`host_phase` / `stage_elapsed_minutes` / `current_target` 等 → `runtime/DIALOGUE-LOG.md`；`mastery_updates` → `runtime/data/mastery-state.json` + `mastery-history.json`；`stage_snapshots` → `mastery-history.json`（带 `stage` 字段）。
 
+> **`now` 为什么在 state 里而不在节点里调 `datetime.now()`**：时钟是外部世界。把它做成**输入**，图就变成纯函数 —— 可单测、可回放（给定一串时间戳能重放整节课）。实现上由会话层每轮把 `now` 塞进 state，图内任何节点都不得自己取时间。这也是方案 B 能被验收的前提。
+
 ---
 
 ## 3. 节点（Nodes）
 
-每个节点 = 一次职责单一的动作。这 9 个节点就是要实现的目标结构。
+每个节点 = 一次职责单一的动作。这 10 个节点就是要实现的目标结构。
 
 | # | 节点名 | 职责 | 读什么 | 写什么 |
 | --- | --- | --- | --- | --- |
-| 1 | `load_plan` | 载入并校验课程计划 | `lesson-data/lesson-plan.json` | state: `remaining_stages` / `stage_budget_minutes` |
-| 2 | `load_context` | 分层装配上下文 | 见第 4 节 | state 不变（组装 prompt） |
-| 3 | `classify_turn` | 判断本轮输入类型 | 学生消息 + `host_phase` | state: `speaker` / 路由标记 |
-| 4 | `host_event` | 处理主持人事件 | 主持人指令 | state: 目标 `host_phase` |
-| 5 | `teach` | 执行本幕教学（大模型节点） | 组装好的上下文 + `stages/<id>/prompt.md` | state: `reply_text` / `turn_evidence` / `current_question` |
-| 6 | `judge_mastery` | 按 rubric 判星级 | `stages/<id>/rubric.md` + `rules/interaction/MASTERY-STAR-RULES.md` | state: `mastery_updates` |
-| 7 | `judge_advance` | **判定是否切幕**（编排核心） | 见第 5 节 | state: 目标 `host_phase` / `advance_reason` |
-| 8 | `write_state` | 落盘所有状态 | state | `runtime/**` / `runtime/data/**` |
-| 9 | `format_reply` | 组装回复与播报标记 | state | state: `reply_text` / `speech_kind` |
+| 1 | `load_plan` | 载入并校验课程计划 | `lesson-data/lesson-plan.json` | state: `remaining_stages` / `stage_budget_minutes` / 时钟策略 |
+| 2 | `tick` | **按真实时钟结算本轮耗时**（编排核心·时间） | state 的 `now` / `last_activity_at` / `stage_started_at` | state: `idle_elapsed_minutes` / `idle_fraction` / `stage_teach_minutes` 等 |
+| 3 | `load_context` | 分层装配上下文 | 见第 4 节 | state 不变（组装 prompt） |
+| 4 | `classify_turn` | 判断本轮输入类型 | 学生消息 + `host_phase` | state: `speaker` / 路由标记 |
+| 5 | `host_event` | 处理主持人事件 | 主持人指令 | state: 目标 `host_phase` |
+| 6 | `teach` | 执行本幕教学（大模型节点） | 组装好的上下文 + `stages/<id>/prompt.md` | state: `reply_text` / `turn_evidence` / `current_question` |
+| 7 | `judge_mastery` | 按 rubric 判星级 | `stages/<id>/rubric.md` + `rules/interaction/MASTERY-STAR-RULES.md` | state: `mastery_updates` |
+| 8 | `judge_advance` | **判定是否切幕**（编排核心·进度） | 见第 5 节 | state: 目标 `host_phase` / `advance_reason` |
+| 9 | `write_state` | 落盘所有状态 | state | `runtime/**` / `runtime/data/**` |
+| 10 | `format_reply` | 组装回复与播报标记 | state | state: `reply_text` / `speech_kind` |
+
+> **为什么把 `tick` 单独拆出来**：时间计算只有一处，其他地方一律读结果。否则"到底按哪个数算耗时"会散落在三四个节点里，改不动也测不了。
 
 ---
 
@@ -127,21 +149,120 @@ class ClassroomState(TypedDict):
 
 ---
 
-## 5. 条件边与切幕判定（`judge_advance`）
+## 5. 真实时钟：`tick` 节点（方案 B）
+
+整个编排器**只有这一个地方读时间**。它把"墙上时钟过去了多久"转成"这节课应该记多少分钟"。
+
+### 5.1 输入 / 输出
+
+```
+输入:  now, last_activity_at, stage_started_at, lesson_started_at,
+       stage_teach_minutes, lesson_teach_minutes, idle_gap_minutes, idle_credit_ratio
+
+输出:  idle_elapsed_minutes   # 本轮真实间隔
+       idle_fraction          # 这轮间隔里"算作课时"的比例
+       stage_elapsed_minutes  # 墙钟：now - stage_started_at（给老师看真实进度）
+       lesson_elapsed_minutes # 墙钟：now - lesson_started_at
+       stage_teach_minutes    # 净时长 += idle_elapsed * idle_fraction
+       lesson_teach_minutes   # 同上
+       last_activity_at       # 更新为 now
+```
+
+### 5.2 有效时长怎么算（`idle_fraction`）
+
+间隔不总是课时。挂机 20 分钟和认真想了 20 分钟，对"上完这门课"的贡献完全不同。
+
+```
+gap = now - last_activity_at          # 本轮真实间隔（分钟）
+
+若 gap >= absence_grace_minutes:      # 人明显不在了
+    idle_fraction = 0                 # 完全不计课时
+否则若 gap >= idle_gap_minutes:       # 单轮间隔偏长，疑似中途走开
+    idle_fraction = idle_credit_ratio # 只计一部分，默认 0.25
+否则:
+    idle_fraction = 1.0               # 正常的一轮，全额计入
+```
+
+### 5.3 两个口径都要记（重要）
+
+| 口径 | 字段 | 用途 |
+| --- | --- | --- |
+| **墙钟时长** | `stage_elapsed_minutes` / `lesson_elapsed_minutes` | 给老师看"这节课实际过去了多久"，用于复盘 |
+| **净时长** | `stage_teach_minutes` / `lesson_teach_minutes` | **仅用于切幕判定**，排除挂机 |
+
+> **切幕只看净时长。** 否则学生挂机 10 分钟会把整幕直接顶过预算、AI 一字未讲就被切走。
+> 墙钟时长照常记录，因为老师需要知道真实情况（"这 45 分钟里其实有 12 分钟人在发呆"）。
+
+### 5.4 整幕挂机：人不在怎么办
+
+"人不在"的判定**只看上一轮活动距今多久**（`now - last_activity_at`），**不看这一幕总共开了多久**。
+
+> ⚠️ **这里有个坑，参考实现已经踩过**：如果用"幕的墙钟时长 ≥ 宽限"来判缺席，那么一幕一旦超过宽限，即使学生刚刚还说过话，也会被永久判为缺席，**预算将永远无法触发切幕，这节课下不来**。回归测试 `orchestrator/clock_reference.py` 专门盯住了这条。
+
+若某轮判定为"人不在"，按 `absent_policy` 处理：
+
+| 取值 | 行为 |
+| --- | --- |
+| `extend` | 幕不推进，预算冻结。等学生回来从原处继续（默认） |
+| `skip` | 记录空缺，直接切下一幕，并在日志写明"本幕因缺席跳过" |
+| `end` | 结束整节课，进入 `ending`，日志写明"因缺席提前结束" |
+
+### 5.5 时间结算伪码
+
+```python
+from datetime import datetime
+
+def tick(state: ClassroomState) -> dict:
+    now = datetime.fromisoformat(state["now"])
+    last = state.get("last_activity_at") or state["lesson_started_at"]
+    gap = (now - datetime.fromisoformat(last)).total_seconds() / 60
+
+    if gap >= state["absence_grace_minutes"]:
+        fraction = 0.0
+    elif gap >= state["idle_gap_minutes"]:
+        fraction = state["idle_credit_ratio"]
+    else:
+        fraction = 1.0
+
+    credited = gap * fraction
+    stage_wall = (now - datetime.fromisoformat(
+        state["stage_started_at"])).total_seconds() / 60
+
+    return {
+        "idle_elapsed_minutes": round(gap, 2),
+        "idle_fraction": fraction,
+        "absence_kind": "absent" if fraction == 0.0 else "normal",  # 只看 gap
+        "stage_teach_minutes": round(state["stage_teach_minutes"] + credited, 2),
+        "lesson_teach_minutes": round(state["lesson_teach_minutes"] + credited, 2),
+        "stage_elapsed_minutes": round(stage_wall, 2),
+        "lesson_elapsed_minutes": round((now - datetime.fromisoformat(
+            state["lesson_started_at"])).total_seconds() / 60, 2),
+        "last_activity_at": state["now"],
+    }
+```
+
+> **可回放性**：因为时间全部来自 `now` 输入，喂一串时间戳就能重放整节课。这是单测切幕逻辑的唯一可行方式。可运行的参考实现 + 12 条回归测试见 `orchestrator/clock_reference.py`。
+
+---
+
+## 6. 条件边与切幕判定（`judge_advance`）
 
 这是编排器"自动推进"的决策点。**每轮对话结束都执行一次。**
 
 ```
-输入: host_phase, stage_elapsed_minutes, stage_budget_minutes,
+输入: host_phase, stage_teach_minutes, stage_budget_minutes,   ← 注意：用净时长
       turn_evidence, unresolved, advance_when, advance_policy
 
 判定顺序（短路）:
-  1. 若 stage_elapsed_minutes < min_stage_minutes      → 留幕 (return "stay")
-  2. 若 advance_when == "evidence" 且 unresolved 非空  → 留幕
+  0. 若 tick 判定为"人不在" 且 absent_policy == "end"  → 切到 ending
+     若 tick 判定为"人不在" 且 absent_policy == "skip" → 切下一幕
+     若 tick 判定为"人不在" 且 absent_policy == "extend" → 留幕（预算冻结）
+  1. 若 stage_teach_minutes < min_stage_minutes      → 留幕 (return "stay")
+  2. 若 advance_when == "evidence" 且 unresolved 非空 → 留幕
   3. 若 turn_evidence 非空 且 unresolved 为空:
        advance_when ∈ {evidence, either} 且 on_evidence_reached=="advance"
                                                         → 切幕 (return "next_stage")
-  4. 若 stage_elapsed_minutes >= stage_budget_minutes:
+  4. 若 stage_teach_minutes >= stage_budget_minutes:
        on_budget_exhausted == "force_advance"           → 切幕
        on_budget_exhausted == "wrap_up"                 → 本幕收尾后切幕
        on_budget_exhausted == "extend"
@@ -168,46 +289,48 @@ graph.add_conditional_edges(
 
 **`advance_stage` 节点做的事（切幕三连）：**
 
-1. 把当前幕的**阶段快照**追加进 `stage_snapshots`（含 `stage`、`elapsed`、`mastered`、`unresolved`、`stars_snapshot`）
+1. 把当前幕的**阶段快照**追加进 `stage_snapshots`（含 `stage`、`elapsed`、`teach_minutes`、`mastered`、`unresolved`、`stars_snapshot`）
 2. 从 `remaining_stages` 取下一幕；**跳过 `enabled: false` 的阶段**（它们在 `load_plan` 阶段就已被过滤掉）
-3. 重置 `stage_started_at` / `stage_elapsed_minutes` / `current_target` / `unresolved`，设新 `host_phase`
+3. 重置 `stage_started_at`（= 本轮 `now`）/ `stage_teach_minutes` / `current_target` / `unresolved`，设新 `host_phase`
 
-**「目前能不能上课」的判断**：只要 `lesson-plan.json` 存在且通过第 8 节的校验，`remaining_stages` 就非空，编排器即可开课 —— **阶段内容为空壳不影响开课**，见第 7 节。
+**「目前能不能上课」的判断**：只要 `lesson-plan.json` 存在且通过第 9 节的校验，`remaining_stages` 就非空，编排器即可开课 —— **阶段内容为空壳不影响开课**，见第 8 节。
 
 ---
 
-## 6. 图结构总览
+## 7. 图结构总览
 
 ```
 START
   │
   ▼
-load_plan ──► load_context ──► classify_turn
-                                    │
-                    ┌───────────────┼───────────────┐
-                    ▼               ▼               ▼
-              host_event       teach(学生轮)    (其他路由)
-                    │               │
-                    │               ▼
-                    │         judge_mastery ──► judge_advance
-                    │                              │
-                    └──────────────► judge_advance ─┘
-                                       │
-                          ┌────────────┴────────────┐
-                          ▼                         ▼
-                    advance_stage                 write_state
-                          │                         │
-                          └────────► write_state ◄──┘
-                                       │
-                                       ▼
-                                  format_reply ──► END
+load_plan ──► tick ──► load_context ──► classify_turn
+                                            │
+                            ┌───────────────┼───────────────┐
+                            ▼               ▼               ▼
+                      host_event       teach(学生轮)    (其他路由)
+                            │               │
+                            │               ▼
+                            │         judge_mastery ──► judge_advance
+                            │                              │
+                            └──────────────► judge_advance ─┘
+                                               │
+                                  ┌────────────┴────────────┐
+                                  ▼                         ▼
+                            advance_stage                 write_state
+                                  │                         │
+                                  └────────► write_state ◄──┘
+                                               │
+                                               ▼
+                                          format_reply ──► END
 ```
 
 **Checkpointer**：用 LangGraph 的 checkpointer 持久化 `ClassroomState`。推荐 SQLite（与 `runtime/` 同级的本地文件），线程 ID = `session_id`。这样即使进程重启，也能从上一轮状态恢复 —— 等价于旧方案的 `DIALOGUE-LOG.md` 落盘，但多了一层原子性。
 
+> `tick` 放在 `load_plan` 之后、`load_context` 之前：先结算时间，后续所有节点读到的都是同一份确定数字。
+
 ---
 
-## 7. 空壳阶段的降级行为（保证"现在就能跑"）
+## 8. 空壳阶段的降级行为（保证"现在就能跑"）
 
 **这是本设计的关键约定**：阶段内容可以完全不写，编排器照常运行。
 
@@ -230,7 +353,7 @@ load_plan ──► load_context ──► classify_turn
 
 ---
 
-## 8. 启动校验清单
+## 9. 启动校验清单
 
 编排器开课前依次检查，任一失败则拒绝开课并写入 `runtime/DIALOGUE-LOG.md` 的"本轮证据"：
 
@@ -243,17 +366,21 @@ load_plan ──► load_context ──► classify_turn
 6. `runtime/` 下模板文件齐全（缺失则从 `rules/interaction/*-FORMAT.md` 生成空白模板）
 7. `rules/KNOWLEDGE-BASE.md` 存在（缺失则警告但允许开课，只是不能提问）
 
-> **注意**：校验只到"目录/文件存在"这一层。**阶段目录里的文件是空的也算通过** —— 空壳是合法状态，见第 7 节。
+> **注意**：校验只到"目录/文件存在"这一层。**阶段目录里的文件是空的也算通过** —— 空壳是合法状态，见第 8 节。
+
+8. `advance_policy` 与 `clock_policy` 字段齐全，取值合法（`advance_when` ∈ {either, evidence, budget}；`absent_policy` ∈ {extend, skip, end}）
+   > `clock_policy` 缺失时用内置默认值（`idle_gap_minutes=8`、`idle_credit_ratio=0.25`、`absent_policy="extend"`、`absence_grace_minutes=15`），**不阻断开课**。
 
 ---
 
-## 9. 节点职责总表
+## 10. 节点职责总表
 
-> 本仓库**不含 n8n，也不含前端**。以下 9 个节点是要实现的目标结构，与旧实现的对照见 `MIGRATION.md`。
+> 本仓库**不含 n8n，也不含前端**。以下 10 个节点是要实现的目标结构，与旧实现的对照见 `MIGRATION.md`。
 
 | 节点 | 必须实现 | 说明 |
 | --- | --- | --- |
 | `load_plan` | 是 | 读 `lesson-data/lesson-plan.json` 并校验 |
+| `tick` | 是 | **真实时钟结算**，唯一读时间的地方 |
 | `load_context` | 是 | 按 `host_phase` 分层装配上下文 |
 | `classify_turn` | 是 | 判断本轮输入类型 |
 | `host_event` | 是 | 处理开场/收尾等主持事件 |

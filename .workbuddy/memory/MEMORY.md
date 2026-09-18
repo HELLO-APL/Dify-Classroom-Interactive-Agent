@@ -13,12 +13,22 @@
 - **掌握评分靠后三阶段表现阶段性记录**:复述(2-3星)、探究(4星)、讨论(只记快照)。新增 stage_snapshot 机制写入 mastery-history.json。
 - 三阶段内容独立成 `stages/<stage>/`:questions.md(老师出题)/ rubric.md(评判标准)/ prompt.md(AI提示词),**可空壳,留空不影响运行**(有降级兜底)。
 - `KNOWLEDGE-BASE.md` 新增 4 个探究字段:为什么这样设计/如何实现/解决什么实际问题/关联学科 —— 这是深层探究阶段唯一燃料。
-- "区分问题" = 专用于暴露 A/B 混淆的题;易混淆点列表写在 TMISSION,区分问题写在 LESSON-INTERACTION(去重分工)。
+- "区分问题" 概念**已废弃**(2026-09-17):不再出现于任何格式要求中。易混淆点仅在 `TMISSION.md` 列 A vs B 名称,不写提问方式。
+- **复述/探究阶段的提问链路**:`stages/<stage>/questions.md`(老师出题,现为空) → 为空则降级用 `runtime/TMISSION.md` 的 `检验问题`(已补齐 4 条,挂 KP 编号) → 再降级用 `rules/KNOWLEDGE-BASE.md` 的 `检测问题`。三级兜底,保证空壳也能上课。
 - 目录用无空格英文名:rules/ lesson-data/ runtime/ apps/ stages/ orchestrator/ workflow/。
 - 旧用户运行时记录不迁移,runtime/ 与 workspace data 用空白模板初始化。
 
+## 编排器时钟约定（2026-09-18 确认方案 B）
+- **真实时钟，不靠 LLM 估算时长**。`now` 由会话层**注入 state**，图内节点一律不调 `datetime.now()` → 图是纯函数，可单测可回放。
+- **新增 `tick` 节点**（总计 10 个节点）：所有时间计算集中于此，是唯一读时间的地方。
+- **净时长 vs 墙钟时长**：`*_teach_minutes`（扣挂机，**切幕只看这个**）/ `*_elapsed_minutes`（真实流逝，老师复盘用）。
+- **缺席判定只看 `now - last_activity_at`，绝不看本幕开了多久**。曾因此出现致命 bug：幕超宽限后即使学生刚说过话也永久判缺席 → 预算冻结 → 课下不来。`clock_reference.py` 有专门回归用例守这条。
+- `clock_policy`（在 `lesson-plan.json`）：`idle_gap_minutes=8`、`idle_credit_ratio=0.25`、`absence_grace_minutes=15`、`absent_policy=extend`。缺失用默认值，不阻断开课。
+- 参考实现 + 12 条回归测试：`orchestrator/clock_reference.py`（改时钟逻辑后必须重跑）。
+
 ## 关键文件
-- `orchestrator/ORCHESTRATOR.md` — LangGraph 编排规范(State schema / 9 节点 / judge_advance 判定 / 分层装配 / 降级行为 / 校验清单)
+- `orchestrator/ORCHESTRATOR.md` — LangGraph 编排规范(State schema / 10 节点 / tick 时钟 / judge_advance 判定 / 分层装配 / 降级行为 / 校验清单)
+- `orchestrator/clock_reference.py` — 时钟与切幕的可运行参考实现 + 回归测试
 - `orchestrator/MIGRATION.md` — 新旧路径映射与变更记录
 - `rules/interaction/MASTERY-STAR-RULES.md` — 0-5 星唯一权威规则
 - `lesson-data/lesson-plan.json` — 老师端编排入口

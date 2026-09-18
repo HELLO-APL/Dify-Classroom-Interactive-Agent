@@ -62,6 +62,7 @@
   "student_id": "student-001",
   "lesson_id": "ch3-process-scheduling",
   "stage": "recap_discussion",
+  "stage_teach_minutes": 8.6,
   "stage_elapsed_minutes": 9.2,
   "targets_closed": ["三级调度的对象与时机"],
   "targets_open": ["抢占式与非抢占式"],
@@ -76,10 +77,14 @@
 | 字段 | 说明 |
 | --- | --- |
 | `stage` | 阶段标识，取值同 `host_phase` |
+| `stage_teach_minutes` | 本阶段**净时长**（不含挂机），用于判断"这节课实际上了多久" |
+| `stage_elapsed_minutes` | 本阶段**墙钟时长**，用于判断"这节课实际过去多久" |
 | `targets_closed` | 本阶段被证据关闭的目标 |
 | `targets_open` | 本阶段结束时仍未关闭的目标 |
 | `stars_snapshot` | 本阶段结束时各 KP 的星级快照 |
 | `evidence` | 支撑这个快照的学生原话或行为 |
+
+> 两个时长都记，是为了让老师能看出"学生在这幕里是真投入还是磨时间"。
 
 ---
 

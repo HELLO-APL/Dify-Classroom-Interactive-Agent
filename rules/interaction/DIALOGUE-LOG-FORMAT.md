@@ -21,10 +21,18 @@
 ### 编排器
 - host_phase: {uninitialized | intro | guided_learning | recap_discussion | deep_inquiry | class_discussion | ending}
 - active_segment_id: {segment id or 无}
+- now: {ISO8601 本轮时间戳，由会话层注入}
+- lesson_started_at: {ISO8601 or 无}
+- last_activity_at: {ISO8601 or 无}
 - stage_started_at: {ISO8601 or 无}
-- stage_elapsed_minutes: {number}
-- stage_budget_minutes: {number}
+- stage_teach_minutes: {number}      ← 净时长（不含挂机），切幕判定用这个
+- stage_elapsed_minutes: {number}    ← 墙钟时长，给老师复盘用
+- lesson_teach_minutes: {number}
 - lesson_elapsed_minutes: {number}
+- stage_budget_minutes: {number}
+- idle_elapsed_minutes: {number}     ← 距上一轮的间隔
+- idle_fraction: {number 0-1}        ← 该间隔中算作课时的比例
+- absence_kind: {normal | absent}    ← 是否判定为人不在
 - remaining_stages: {尚未演出的阶段列表}
 - advance_reason: {为什么切幕 or 无}
 
@@ -73,12 +81,38 @@
 
 | 字段 | 谁写 | 作用 |
 | --- | --- | --- |
-| `stage_started_at` | 编排器（切幕时） | 本幕开始时刻，用于算耗时 |
-| `stage_elapsed_minutes` | 编排器（每轮） | 本幕已花时间，与预算比较决定是否切幕 |
+| `now` | **会话层注入** | 本轮时间戳。编排器不自己取时间，保证可单测、可回放 |
+| `lesson_started_at` | 编排器（开课） | 本课开始时刻，用于算总墙钟时长 |
+| `last_activity_at` | 编排器（每轮） | 上一轮有效活动时刻，用于算本轮间隔 |
+| `stage_started_at` | 编排器（切幕时） | 本幕开始时刻，用于算本幕墙钟时长 |
+| `stage_teach_minutes` | 编排器（`tick`） | **净时长，切幕判定只看这个** |
+| `stage_elapsed_minutes` | 编排器（`tick`） | 墙钟时长，给老师看真实耗时 |
 | `stage_budget_minutes` | 编排器（读 plan 时） | 本幕预算，来自 `lesson-plan.json` |
-| `lesson_elapsed_minutes` | 编排器（每轮） | 本课总耗时，用于整体进度判断 |
+| `lesson_teach_minutes` | 编排器（`tick`） | 本课净时长累计 |
+| `lesson_elapsed_minutes` | 编排器（`tick`） | 本课墙钟时长累计 |
+| `idle_elapsed_minutes` | 编排器（`tick`） | 距上一轮的间隔，用于判定是否挂机 |
+| `idle_fraction` | 编排器（`tick`） | 该间隔中算作课时的比例（1 / 0.25 / 0） |
+| `absence_kind` | 编排器（`tick`） | `normal` / `absent`。**只看上一轮距今多久**，不看本幕开了多久 |
 | `remaining_stages` | 编排器（切幕时） | 尚未演出的阶段，`enabled: false` 的已被过滤 |
 | `advance_reason` | 编排器（切幕时） | 记录为什么切幕，便于老师复盘 |
+
+> **净时长 vs 墙钟时长**：切幕只看 `*_teach_minutes`。否则学生挂机十分钟会把整幕顶过预算、AI 一字未讲就被切走。墙钟时长照常记录，老师需要知道"这 45 分钟里有多少是在发呆"。
+
+---
+
+## 时钟策略（来自 `lesson-plan.json` 的 `clock_policy`）
+
+上面这些字段的**取值口径由老师配置**，写在 `lesson-data/lesson-plan.json`：
+
+| 字段 | 默认 | 作用 |
+| --- | --- | --- |
+| `idle_gap_minutes` | 8 | 单轮间隔超过此值 → 该轮只按 `idle_credit_ratio` 记课时 |
+| `idle_credit_ratio` | 0.25 | 上一条的折扣比例。设为 1 则关闭挂机折扣 |
+| `absence_grace_minutes` | 15 | 单轮间隔超过此值 → 判 `absence_kind=absent`，该轮记 0 |
+| `absent_policy` | `extend` | 人不在时怎么办：`extend` 冻结预算等学生 / `skip` 跳过本幕 / `end` 提前结束 |
+
+> 缺失时用上表默认值，**不阻断开课**。
+> 判定"人不在"只看 `now - last_activity_at`，**不看本幕开了多久** —— 否则幕一旦超过宽限就会永久冻结预算，课下不来。
 
 ---
 

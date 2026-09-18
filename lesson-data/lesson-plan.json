@@ -24,5 +24,12 @@
     "on_evidence_reached": "advance",
     "min_stage_minutes": 2,
     "max_stage_overrun_minutes": 3
+  },
+
+  "clock_policy": {
+    "idle_gap_minutes": 8,
+    "idle_credit_ratio": 0.25,
+    "absent_policy": "extend",
+    "absence_grace_minutes": 15
   }
 }

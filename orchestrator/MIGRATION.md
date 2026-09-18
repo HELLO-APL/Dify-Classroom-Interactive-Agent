@@ -1,6 +1,6 @@
 # 从旧仓库迁移的映射与变更记录
 
-> 迁移日期：2026-09-17（2026-09-18 修订：移除 n8n 与前端，废弃区分问题，`LESSON-INTERACTION` 改名）
+> 迁移日期：2026-09-17（2026-09-18 修订：移除 n8n 与前端，废弃区分问题，`LESSON-INTERACTION` 改名，编排器改用真实时钟）
 > 源仓库：`D:\project\Dify 课堂互动智能体`（**保持不动，仅作参照**）
 > 目标仓库：`D:\project\主动引导智能体`（本仓库）
 > 上游：`HELLO-APL/Dify-Classroom-Interactive-Agent`
@@ -108,7 +108,9 @@
 | 编排器字段 | `DIALOGUE-LOG-FORMAT.md` |
 | 阶段快照机制 | `MASTERY-STAR-RULES.md` |
 | 课程计划配置 | `lesson-data/lesson-plan.json` |
+| 时钟策略 `clock_policy` | `lesson-data/lesson-plan.json` |
 | LangGraph 编排规范 | `orchestrator/ORCHESTRATOR.md` |
+| 时钟与切幕参考实现 + 回归测试 | `orchestrator/clock_reference.py` |
 | KP 4 个探究字段 | `rules/KNOWLEDGE-BASE.md` |
 | 核心难点的 `检验问题` 字段 | `TMISSION-FORMAT.md`（已在 `runtime/TMISSION.md` 补齐 4 条） |
 
@@ -129,7 +131,8 @@
 ## 四、待办
 
 - [x] `runtime/TMISSION.md` 补 `检验问题` 字段（每个核心难点）——2026-09-17 已补齐 4 条，并挂上 `KP-xxx` 编号
+- [x] 补充"无定时器时如何自动切幕"的方案——2026-09-18 采用**真实时钟**（方案 B），见 `ORCHESTRATOR.md` 第 5 节，参考实现 `clock_reference.py`（12/12 回归通过）
 - [ ] `rules/KNOWLEDGE-BASE.md` 填 4 个探究字段（待老师提供内容）
-- [ ] 按 `ORCHESTRATOR.md` 实现 9 个节点（LangGraph）
+- [ ] 按 `ORCHESTRATOR.md` 实现 10 个节点（LangGraph）
 - [ ] `stages/*/questions.md` 与 `rubric.md` 按需填写（待老师提供内容）
-- [ ] 补充"无定时器时如何自动切幕"的方案
+- [ ] 会话层接入 `now` 注入（每轮把时间戳写进 state）
