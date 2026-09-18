@@ -110,7 +110,7 @@
 | 课程计划配置 | `lesson-data/lesson-plan.json` |
 | LangGraph 编排规范 | `orchestrator/ORCHESTRATOR.md` |
 | KP 4 个探究字段 | `rules/KNOWLEDGE-BASE.md` |
-| 核心难点的 `检验问题` 字段 | `TMISSION-FORMAT.md` |
+| 核心难点的 `检验问题` 字段 | `TMISSION-FORMAT.md`（已在 `runtime/TMISSION.md` 补齐 4 条） |
 
 ### 改名
 
@@ -128,8 +128,8 @@
 
 ## 四、待办
 
-- [ ] `runtime/TMISSION.md` 补 `检验问题` 字段（每个核心难点）
-- [ ] `rules/KNOWLEDGE-BASE.md` 填 4 个探究字段
+- [x] `runtime/TMISSION.md` 补 `检验问题` 字段（每个核心难点）——2026-09-17 已补齐 4 条，并挂上 `KP-xxx` 编号
+- [ ] `rules/KNOWLEDGE-BASE.md` 填 4 个探究字段（待老师提供内容）
 - [ ] 按 `ORCHESTRATOR.md` 实现 9 个节点（LangGraph）
-- [ ] `stages/*/questions.md` 与 `rubric.md` 按需填写
+- [ ] `stages/*/questions.md` 与 `rubric.md` 按需填写（待老师提供内容）
 - [ ] 补充"无定时器时如何自动切幕"的方案
