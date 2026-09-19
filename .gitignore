@@ -23,3 +23,10 @@ __pycache__/
 # 编排器 Checkpointer（本地状态）
 orchestrator/*.sqlite
 orchestrator/*.sqlite-journal
+
+# 工具产物
+.cache/
+.slidep/
+
+# Office 锁文件
+~$*
